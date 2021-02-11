@@ -7,7 +7,7 @@ on:
             - "dev-*"
 
 jobs:
-    build-test-deploy:
+    docker:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout 🛎️
@@ -23,5 +23,5 @@ jobs:
                   HEROKU_API_KEY: ${{ secrets.HEROKU_PASSWORD }}
               run: |
                   docker build . -t web
-                  heroku container:push web --app ${{ secrets.HEROKU_APP }}-dev
-                  heroku container:release web --app ${{ secrets.HEROKU_APP }}-dev
+                  heroku container:push web --app ${{ secrets.HEROKU_APP }}
+                  heroku container:release web --app ${{ secrets.HEROKU_APP }}
