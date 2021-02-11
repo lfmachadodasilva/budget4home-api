@@ -1,4 +1,4 @@
-name: api action
+name: action
 
 on:
     push:
