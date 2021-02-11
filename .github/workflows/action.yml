@@ -1,0 +1,27 @@
+name: action
+
+on:
+    push:
+        branches:
+            - master
+            - "dev-*"
+
+jobs:
+    build-test-deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout 🛎️
+              uses: actions/checkout@v2
+            - name: Prepare
+              env:
+                  HEROKU_API_KEY: ${{ secrets.HEROKU_PASSWORD }}
+              run: |
+                  wget -qO- https://cli-assets.heroku.com/install.sh | sh
+                  echo "${{ secrets.HEROKU_PASSWORD }}" | docker login -u "${{ secrets.HEROKU_USERNAME }}" --password-stdin registry.heroku.com
+            - name: Restore & Build 🛠 & deploy 🚀
+              env:
+                  HEROKU_API_KEY: ${{ secrets.HEROKU_PASSWORD }}
+              run: |
+                  docker build . -t web
+                  heroku container:push web --app ${{ secrets.HEROKU_APP }}-dev
+                  heroku container:release web --app ${{ secrets.HEROKU_APP }}-dev
