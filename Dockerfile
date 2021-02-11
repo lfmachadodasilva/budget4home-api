@@ -8,7 +8,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS base
 #############
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS restore
 
-WORKDIR /app/api
+WORKDIR /app
 EXPOSE 80
 
 RUN mkdir ./budget4home
