@@ -1,12 +1,12 @@
 ################
 ## Base Image ##
 ################
-FROM mcr.microsoft.com/dotnet/core/aspnet:5.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS base
 
 #############
 ## Restore ##
 #############
-FROM mcr.microsoft.com/dotnet/core/sdk:5.0 AS restore
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS restore
 
 WORKDIR /app/api
 EXPOSE 80
