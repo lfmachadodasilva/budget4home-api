@@ -1,11 +1,16 @@
 using budget4home.Models;
+using budget4home.Repositories;
 using budget4home.Services;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 namespace budget4home
@@ -22,15 +27,83 @@ namespace budget4home
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll",
+                    builder =>
+                    {
+                        builder
+                            .WithOrigins(
+                                "http://localhost:3000",
+                                "https://localhost:3000",
+                                "http://lfmachadodasilva.github.io/",
+                                "http://lfmachadodasilva.github.io/budget4home")
+                            .AllowAnyMethod()
+                            .AllowAnyHeader()
+                            .AllowCredentials();
+                    });
+            });
+
+            var firebaseAdmin = Configuration.GetSection("AppConfig:FirebaseAdmin");
+            FirebaseApp.Create(new AppOptions()
+            {
+                Credential = GoogleCredential.FromJson(firebaseAdmin.Value)
+            });
+
+            services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    var projectId = Configuration.GetSection("Firebase:ProjectId").Value;
+                    options.Authority = $"https://securetoken.google.com/{projectId}";
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidIssuer = $"https://securetoken.google.com/{projectId}",
+                        ValidateAudience = true,
+                        ValidAudience = projectId,
+                        ValidateLifetime = true
+                    };
+                });
+
             services.AddDbContext<Context>(opt => opt.UseInMemoryDatabase("budget4home"));
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "budget4home", Version = "v1" });
+                c.SwaggerDoc(
+                    "v1",
+                    new OpenApiInfo
+                    {
+                        Title = "budget4home",
+                        Description = $"buildVersion: {Configuration.GetSection("AppConfig:BuildVersion").Value}",
+                        Version = "v1"
+                    });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description =
+                        "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+                        },
+                        new[] { "readAccess", "writeAccess" }
+                    }
+                });
             });
 
             // dependency injection
             services.AddTransient<ILabelService, LabelService>();
+            services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IFirebaseRepository, FirebaseRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -44,8 +117,9 @@ namespace budget4home
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "budget4home v1"));
 
+            app.UseCors("AllowAll");
             app.UseRouting();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
