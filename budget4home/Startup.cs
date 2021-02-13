@@ -66,7 +66,19 @@ namespace budget4home
                     };
                 });
 
-            services.AddDbContext<Context>(opt => opt.UseInMemoryDatabase("budget4home"));
+            var connectionStringName = Configuration.GetSection("AppConfig:ConnectionString").Value;
+            if (connectionStringName == "Local")
+            {
+                services.AddDbContext<Context>(opt => opt.UseInMemoryDatabase("budget4home"));
+            }
+            else
+            {
+                services.AddDbContext<Context>(
+                                opt => opt.UseNpgsql(
+                                    Configuration.GetConnectionString(connectionStringName),
+                                    x => x.MigrationsAssembly("budget4home")));
+            }
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -126,6 +138,8 @@ namespace budget4home
             {
                 endpoints.MapControllers();
             });
+
+            app.DatabaseMigrate(Configuration);
         }
     }
 }

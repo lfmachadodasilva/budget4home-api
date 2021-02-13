@@ -15,6 +15,10 @@ jobs:
       - name: Prepare
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_PASSWORD }}
+          HEROKU_DB_HOST: ${{ secrets.HEROKU_DB_HOST }}
+          HEROKU_DB_DATABASE: ${{ secrets.HEROKU_DB_DATABASE }}
+          HEROKU_DB_USER: ${{ secrets.HEROKU_DB_USER }}
+          HEROKU_DB_PASSWORD: ${{ secrets.HEROKU_DB_PASSWORD }}
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           FIREBASE_PROJECT: ${{ secrets.FIREBASE_PROJECT }}
           FIREBASE_ADMIN: ${{ secrets.FIREBASE_ADMIN }}
