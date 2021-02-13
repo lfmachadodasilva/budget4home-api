@@ -20,7 +20,7 @@ namespace budget4home
                     using (var context = serviceScope.ServiceProvider.GetService<Context>())
                     {
                         // context.Database.EnsureDeleted();
-                        // context.Database.Migrate();
+                        context.Database.Migrate();
                     }
                 }
             }
