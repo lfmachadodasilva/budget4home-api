@@ -1,6 +1,9 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
 using budget4home.Helpers;
 using budget4home.Models;
+using budget4home.Models.Dtos;
 using budget4home.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,11 +17,13 @@ namespace budget4home.Controllers
     {
         private readonly ILabelService _labelService;
         private readonly IValidateHelper _validateHelper;
+        private readonly IMapper _mapper;
 
-        public LabelController(ILabelService labelService, IValidateHelper validateHelper)
+        public LabelController(ILabelService labelService, IValidateHelper validateHelper, IMapper mapper)
         {
             _labelService = labelService;
             _validateHelper = validateHelper;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -26,7 +31,7 @@ namespace budget4home.Controllers
         {
             var userId = _validateHelper.GetUserId(HttpContext);
             var objs = await _labelService.GetAll(userId, groupId);
-            return Ok(objs);
+            return Ok(_mapper.Map<List<LabelModel>, ICollection<LabelDto>>(objs));
         }
 
         [HttpGet("full")]

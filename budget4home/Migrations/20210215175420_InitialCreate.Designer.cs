@@ -10,7 +10,7 @@ using budget4home.Models;
 namespace budget4home.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20210215165701_InitialCreate")]
+    [Migration("20210215175420_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,10 +34,10 @@ namespace budget4home.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<long?>("GroupId")
+                    b.Property<long>("GroupId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("LabelId")
+                    b.Property<long>("LabelId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Name")
@@ -113,11 +113,15 @@ namespace budget4home.Migrations
                 {
                     b.HasOne("budget4home.Models.GroupModel", "Group")
                         .WithMany()
-                        .HasForeignKey("GroupId");
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("budget4home.Models.GroupModel", "Label")
+                    b.HasOne("budget4home.Models.LabelModel", "Label")
                         .WithMany()
-                        .HasForeignKey("LabelId");
+                        .HasForeignKey("LabelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Group");
 

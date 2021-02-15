@@ -1,4 +1,3 @@
-using AutoMapper;
 using budget4home.Helpers;
 using budget4home.Models;
 using budget4home.Repositories;
@@ -116,7 +115,7 @@ namespace budget4home
             });
 
             // Automapper
-            services.AddAutoMapper(typeof(Profile));
+            services.AddAutoMapper(typeof(MapperProfile));
 
 
             #region dependency injection 

@@ -22,7 +22,7 @@ namespace budget4home
                         // context.Database.EnsureDeleted();
                         context.Database.Migrate();
 
-
+                        // Seed.Run(context);
                     }
                 }
             }
