@@ -6,6 +6,8 @@ namespace budget4home.Models
     {
         [Key]
         T Id { get; set; }
+
+        [Required]
         string Name { get; set; }
     }
 
@@ -13,6 +15,8 @@ namespace budget4home.Models
     {
         [Key]
         public long Id { get; set; }
+
+        [Required]
         public string Name { get; set; }
     }
 
@@ -20,6 +24,8 @@ namespace budget4home.Models
     {
         [Key]
         public string Id { get; set; }
+
+        [Required]
         public string Name { get; set; }
     }
 }

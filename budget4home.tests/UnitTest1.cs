@@ -10,8 +10,8 @@ namespace budget4home.tests
         [Fact]
         public void Test1()
         {
-            LabelModel l = new LabelModel();
-            l.Should().BeOfType<LabelModel>();
+            GroupModel l = new GroupModel();
+            l.Should().BeOfType<GroupModel>();
         }
     }
 }

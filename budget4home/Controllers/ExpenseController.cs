@@ -10,41 +10,33 @@ namespace budget4home.Controllers
     [ApiController]
     [Route("[controller]")]
     [Authorize]
-    public class LabelController : ControllerBase
+    public class ExpenseController : ControllerBase
     {
-        private readonly ILabelService _labelService;
+        private readonly IExpenseService _expenseService;
         private readonly IValidateHelper _validateHelper;
 
-        public LabelController(ILabelService labelService, IValidateHelper validateHelper)
+        public ExpenseController(IExpenseService ExpenseService, IValidateHelper validateHelper)
         {
-            _labelService = labelService;
+            _expenseService = ExpenseService;
             _validateHelper = validateHelper;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get(long groupId)
+        public async Task<IActionResult> Get(long groupId, int year, int month)
         {
             var userId = _validateHelper.GetUserId(HttpContext);
-            var objs = await _labelService.GetAll(userId, groupId);
-            return Ok(objs);
-        }
-
-        [HttpGet("full")]
-        public async Task<IActionResult> GetAll(long groupId, int year, int month)
-        {
-            var userId = _validateHelper.GetUserId(HttpContext);
-            var objs = await _labelService.GetAllFullAsync(userId, groupId, year, month);
+            var objs = await _expenseService.GetAll(userId, groupId, year, month);
             return Ok(objs);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] LabelModel obj)
+        public async Task<IActionResult> Post([FromBody] ExpenseModel obj)
         {
             var userId = _validateHelper.GetUserId(HttpContext);
 
             try
             {
-                var objs = await _labelService.AddAsync(userId, obj);
+                var objs = await _expenseService.AddAsync(userId, obj);
                 return Ok(objs);
             }
             catch
@@ -54,13 +46,13 @@ namespace budget4home.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Put([FromBody] LabelModel obj)
+        public async Task<IActionResult> Put([FromBody] ExpenseModel obj)
         {
             var userId = _validateHelper.GetUserId(HttpContext);
 
             try
             {
-                var objs = await _labelService.UpdateAsync(userId, obj);
+                var objs = await _expenseService.UpdateAsync(userId, obj);
                 return Ok(objs);
             }
             catch
@@ -76,7 +68,7 @@ namespace budget4home.Controllers
 
             try
             {
-                var objs = await _labelService.DeleteAsync(userId, id);
+                var objs = await _expenseService.DeleteAsync(userId, id);
                 return Ok(objs);
             }
             catch
