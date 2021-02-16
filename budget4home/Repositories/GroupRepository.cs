@@ -16,11 +16,16 @@ namespace budget4home.Repositories
 
     public class GroupRepository : RepositoryBase<GroupModel, long>, IGroupRepository
     {
+        private readonly Context _context;
         private readonly IFirebaseRepository _firebaseRepository;
 
-        public GroupRepository(Context context, IMapper mapper, IFirebaseRepository firebaseRepository)
+        public GroupRepository(
+            Context context,
+            IMapper mapper,
+            IFirebaseRepository firebaseRepository)
             : base(context, mapper)
         {
+            _context = context;
             _firebaseRepository = firebaseRepository;
         }
 
@@ -52,6 +57,15 @@ namespace budget4home.Repositories
                     Users = usersTmp
                 };
             }).ToList();
+        }
+
+        public override Task<GroupModel> GetByIdAsync(long id, bool include)
+        {
+            //_logger.LogInformation("get all");
+            return _context.Groups
+                .Include(g => g.Users)
+                    .ThenInclude(gu => gu.Group)
+                .FirstOrDefaultAsync(x => x.Id.Equals(id));
         }
     }
 }

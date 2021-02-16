@@ -1,20 +1,16 @@
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace budget4home.Models.Dtos
 {
-    public class LabelDto
-    {
-        public long Id { get; set; }
-        public string Name { get; set; }
-    }
+    public class LabelDto : BaseDto { }
 
-    public class LabelFullDto
+    public class LabelFullDto : LabelDto
     {
-        public long Id { get; set; }
-        public string Name { get; set; }
-
         public decimal CurrValue { get; set; }
         public decimal LastValue { get; set; }
         public decimal AvgValue { get; set; }
+    }
+
+    public class LabelManageDto : LabelDto
+    {
+        public long GroupId { get; set; }
     }
 }

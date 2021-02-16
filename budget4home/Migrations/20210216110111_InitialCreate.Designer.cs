@@ -10,7 +10,7 @@ using budget4home.Models;
 namespace budget4home.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20210215175420_InitialCreate")]
+    [Migration("20210216110111_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -95,7 +95,7 @@ namespace budget4home.Migrations
                         .HasColumnType("bigint")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<long?>("GroupId")
+                    b.Property<long>("GroupId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Name")
@@ -143,7 +143,9 @@ namespace budget4home.Migrations
                 {
                     b.HasOne("budget4home.Models.GroupModel", "Group")
                         .WithMany()
-                        .HasForeignKey("GroupId");
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Group");
                 });

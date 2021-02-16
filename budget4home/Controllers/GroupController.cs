@@ -1,51 +1,64 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
 using budget4home.Helpers;
 using budget4home.Models;
+using budget4home.Models.Dtos;
 using budget4home.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace budget4home.Controllers
 {
-    [ApiController]
-    [Route("[controller]")]
     [Authorize]
+    [ApiController]
+    [Route("api/[controller]")]
     public class GroupController : ControllerBase
     {
         private readonly IGroupService _groupService;
-        private readonly IValidateHelper _validateHelper;
+        private readonly IMapper _mapper;
 
-        public GroupController(IGroupService groupService, IValidateHelper validateHelper)
+        public GroupController(
+            IGroupService groupService,
+            IMapper mapper)
         {
             _groupService = groupService;
-            _validateHelper = validateHelper;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get(long groupId)
+        [ProducesResponseType(typeof(GroupDto), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAll()
         {
-            var userId = _validateHelper.GetUserId(HttpContext);
+            var userId = UserHelper.GetUserId(HttpContext);
             var objs = await _groupService.GetAll(userId);
-            return Ok(objs);
+            return Ok(_mapper.Map<ICollection<GroupDto>>(objs));
         }
 
-        [HttpGet("full")]
-        public async Task<IActionResult> GetAll(long groupId, int year, int month)
+        [HttpGet("/api/full/[controller]")]
+        [ProducesResponseType(typeof(ICollection<GroupFullDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllFull()
         {
-            var userId = _validateHelper.GetUserId(HttpContext);
+            var userId = UserHelper.GetUserId(HttpContext);
             var objs = await _groupService.GetAllFullAsync(userId);
-            return Ok(objs);
+            return Ok(_mapper.Map<ICollection<GroupFullDto>>(objs));
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] GroupModel obj)
+        public async Task<IActionResult> Post([FromBody] GroupManageDto dto)
         {
-            var userId = _validateHelper.GetUserId(HttpContext);
+            var userId = UserHelper.GetUserId(HttpContext);
 
             try
             {
-                var objs = await _groupService.AddAsync(userId, obj);
-                return Ok(objs);
+                var model = _mapper.Map<GroupModel>(dto);
+                var obj = await _groupService.AddAsync(userId, model);
+                return Ok(_mapper.Map<GroupManageDto>(obj));
+            }
+            catch (ForbidException)
+            {
+                return Forbid();
             }
             catch
             {
@@ -54,14 +67,19 @@ namespace budget4home.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Put([FromBody] GroupModel obj)
+        public async Task<IActionResult> Put([FromBody] GroupManageDto dto)
         {
-            var userId = _validateHelper.GetUserId(HttpContext);
+            var userId = UserHelper.GetUserId(HttpContext);
 
             try
             {
-                var objs = await _groupService.UpdateAsync(userId, obj);
-                return Ok(objs);
+                var model = _mapper.Map<GroupModel>(dto);
+                var obj = await _groupService.UpdateAsync(userId, model);
+                return Ok(_mapper.Map<GroupManageDto>(obj));
+            }
+            catch (ForbidException)
+            {
+                return Forbid();
             }
             catch
             {
@@ -72,12 +90,16 @@ namespace budget4home.Controllers
         [HttpDelete]
         public async Task<IActionResult> Delete(long id)
         {
-            var userId = _validateHelper.GetUserId(HttpContext);
+            var userId = UserHelper.GetUserId(HttpContext);
 
             try
             {
                 var objs = await _groupService.DeleteAsync(userId, id);
                 return Ok(objs);
+            }
+            catch (ForbidException)
+            {
+                return Forbid();
             }
             catch
             {

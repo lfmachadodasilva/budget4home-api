@@ -1,59 +1,72 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
 using budget4home.Helpers;
 using budget4home.Models;
+using budget4home.Models.Dtos;
 using budget4home.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace budget4home.Controllers
 {
-    [ApiController]
-    [Route("[controller]")]
     [Authorize]
+    [ApiController]
+    [Route("api/[controller]")]
     public class ExpenseController : ControllerBase
     {
         private readonly IExpenseService _expenseService;
-        private readonly IValidateHelper _validateHelper;
+        private readonly IMapper _mapper;
 
-        public ExpenseController(IExpenseService ExpenseService, IValidateHelper validateHelper)
+        public ExpenseController(
+            IExpenseService ExpenseService,
+            IMapper mapper)
         {
             _expenseService = ExpenseService;
-            _validateHelper = validateHelper;
+            _mapper = mapper;
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(ICollection<ExpenseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get(long groupId, int year, int month)
         {
-            var userId = _validateHelper.GetUserId(HttpContext);
-            var objs = await _expenseService.GetAll(userId, groupId, year, month);
-            return Ok(objs);
+            var userId = UserHelper.GetUserId(HttpContext);
+            var models = await _expenseService.GetAll(userId, groupId, year, month);
+            var dtos = _mapper.Map<ICollection<ExpenseDto>>(models);
+            return Ok(dtos);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] ExpenseModel obj)
+        [ProducesResponseType(typeof(ExpenseManageDto), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Post([FromBody] ExpenseManageDto dto)
         {
-            var userId = _validateHelper.GetUserId(HttpContext);
+            var userId = UserHelper.GetUserId(HttpContext);
 
             try
             {
-                var objs = await _expenseService.AddAsync(userId, obj);
-                return Ok(objs);
+                var model = _mapper.Map<ExpenseModel>(dto);
+                var obj = await _expenseService.AddAsync(userId, model);
+                return Ok(_mapper.Map<ExpenseManageDto>(obj));
             }
-            catch
+            catch (Exception e)
             {
-                return BadRequest();
+                return BadRequest(e);
             }
         }
 
         [HttpPut]
-        public async Task<IActionResult> Put([FromBody] ExpenseModel obj)
+        [ProducesResponseType(typeof(ExpenseManageDto), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Put([FromBody] ExpenseManageDto dto)
         {
-            var userId = _validateHelper.GetUserId(HttpContext);
+            var userId = UserHelper.GetUserId(HttpContext);
 
             try
             {
-                var objs = await _expenseService.UpdateAsync(userId, obj);
-                return Ok(objs);
+                var model = _mapper.Map<ExpenseModel>(dto);
+                var obj = await _expenseService.UpdateAsync(userId, model);
+                return Ok(_mapper.Map<ExpenseManageDto>(obj));
             }
             catch
             {
@@ -62,9 +75,10 @@ namespace budget4home.Controllers
         }
 
         [HttpDelete]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         public async Task<IActionResult> Delete(long id)
         {
-            var userId = _validateHelper.GetUserId(HttpContext);
+            var userId = UserHelper.GetUserId(HttpContext);
 
             try
             {

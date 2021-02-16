@@ -37,7 +37,7 @@ namespace budget4home
                             .WithOrigins(
                                 "http://localhost:3000",
                                 "https://localhost:3000",
-                                "http://lfmachadodasilva.github.io/",
+                                "http://lfmachadodasilva.github.io",
                                 "http://lfmachadodasilva.github.io/budget4home")
                             .AllowAnyMethod()
                             .AllowAnyHeader()
