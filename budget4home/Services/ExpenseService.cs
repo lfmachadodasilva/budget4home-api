@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using budget4home.Helpers;
 using budget4home.Models;
+using budget4home.Models.Configurations;
 using budget4home.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,8 +13,8 @@ namespace budget4home.Services
 {
     public interface IExpenseService
     {
-        Task<List<ExpenseModel>> GetAll(string userId, long groupId, int year, int month);
-        Task<List<KeyValuePair<long, decimal>>> GetAllByLabel(string userId, long groupId, DateTime from, DateTime to, Func<IEnumerable<decimal>, decimal> func);
+        Task<List<ExpenseModel>> GetAllAsync(string userId, long groupId, int year, int month);
+        Task<List<KeyValuePair<long, decimal>>> GetValueByLabelAsync(long groupId, DateTime from, DateTime to, bool sum);
         Task<ExpenseModel> AddAsync(string userId, ExpenseModel model);
         Task<ExpenseModel> UpdateAsync(string userId, ExpenseModel model);
         Task<bool> DeleteAsync(string userId, long id);
@@ -22,68 +24,81 @@ namespace budget4home.Services
     {
         private readonly IExpenseRepository _expenseRepository;
         private readonly IValidateHelper _validateHelper;
-        private readonly Context _context;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
         public ExpenseService(
             IExpenseRepository expenseRepository,
             IValidateHelper validateHelper,
-            Context context)
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
             _expenseRepository = expenseRepository;
             _validateHelper = validateHelper;
-            _context = context;
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
-        public Task<List<ExpenseModel>> GetAll(string userId, long groupId, int year, int month)
+        public Task<List<ExpenseModel>> GetAllAsync(string userId, long groupId, int year, int month)
         {
-            return _expenseRepository
-                .GetAll()
-                .Include(x => x.Label)
-                .Include(x => x.Group)
-                .Where(x => x.Date.Year == year && x.Date.Month == month && x.GroupId == groupId)
-                .ToListAsync();
+            return _expenseRepository.GetAllAsync(userId, groupId, year, month);
         }
 
-        public Task<List<KeyValuePair<long, decimal>>> GetAllByLabel(
-            string userId,
+        public async Task<List<KeyValuePair<long, decimal>>> GetValueByLabelAsync(
             long groupId,
             DateTime from,
             DateTime to,
-            Func<IEnumerable<decimal>, decimal> func)
+            bool sum)
         {
-            return Task.Run(() =>
-            {
-                return _context.Expenses
-                    .Include(x => x.Group)
-                        .ThenInclude(x => x.Users)
-                    .Where(x =>
-                        // filter by group and user
-                        x.Group.Users.Any(x => x.UserId.Equals(userId) && x.GroupId.Equals(groupId)) &&
-                        // filter by date
-                        x.Date.CompareTo(from) >= 0 && x.Date.CompareTo(to) <= 0)
-                    .Select(x => new { Id = x.LabelId, Value = x.Value })
-                    // TODO refactor to not get this data
-                    .AsEnumerable()
-                    .GroupBy(x => x.Id)
-                    .Select(x => new KeyValuePair<long, decimal>(x.Key, func(x.Select(y => y.Value))))
-                    .ToList();
-            });
+            return await _expenseRepository.GetValueByLabelAsync(groupId, from, to, sum);
         }
 
         public async Task<ExpenseModel> AddAsync(string userId, ExpenseModel model)
         {
+            _unitOfWork.BeginTransaction();
+
             var group = await _validateHelper.CheckGroupAsync(model.GroupId, userId);
             await _validateHelper.CheckLabelAsync(model.LabelId, group);
 
             var ret = await _expenseRepository.AddAsync(model);
-            if (ret != null && await _context.SaveChangesAsync() > 0)
+            if (ret != null && await _unitOfWork.CommitAsync() > 0)
+            {
+                if (model.ScheduleTotal > 1 && model.ParentId == null)
+                {
+                    for (var i = 0; i < model.ScheduleTotal; i++)
+                    {
+                        var lastModel = _mapper.Map<ExpenseModel>(model);
+
+                        lastModel.Id = 0;
+                        lastModel.Label = null;
+                        lastModel.Group = null;
+                        lastModel.Date = lastModel.Date.AddMonths(i + 1);
+                        lastModel.ScheduleBy = i + 1;
+                        lastModel.ParentId = model.Id;
+
+                        await AddAsync(userId, lastModel);
+                    }
+                    await _unitOfWork.CommitAsync();
+                }
+
                 return ret;
+            }
+
             return null;
         }
 
         public async Task<ExpenseModel> UpdateAsync(string userId, ExpenseModel model)
         {
+            // TODO update schedule
+            _unitOfWork.BeginTransaction();
+
             var expense = await _validateHelper.CheckExpenseAsync(model.Id);
+            if (expense.ParentId != null)
+            {
+                model.ParentId = expense.ParentId;
+                model.ScheduleBy = expense.ScheduleBy;
+                model.ScheduleTotal = expense.ScheduleTotal;
+            }
 
             var group = await _validateHelper.CheckGroupAsync(expense.GroupId, userId);
             await _validateHelper.CheckLabelAsync(expense.LabelId, group);
@@ -92,18 +107,22 @@ namespace budget4home.Services
             await _validateHelper.CheckLabelAsync(model.LabelId, group);
 
             var ret = await _expenseRepository.UpdateAsync(model);
-            if (ret != null && await _context.SaveChangesAsync() > 0)
+            if (ret != null && await _unitOfWork.CommitAsync() > 0)
+            {
                 return ret;
+            }
             return null;
         }
 
         public async Task<bool> DeleteAsync(string userId, long id)
         {
+            // TODO delete schedule
+
             var expense = await _validateHelper.CheckExpenseAsync(id);
             await _validateHelper.CheckGroupAsync(expense.GroupId, userId);
 
             var ret = await _expenseRepository.DeleteAsync(id);
-            if (ret && await _context.SaveChangesAsync() > 0)
+            if (ret && await _unitOfWork.CommitAsync() > 0)
                 return ret;
             return false;
         }

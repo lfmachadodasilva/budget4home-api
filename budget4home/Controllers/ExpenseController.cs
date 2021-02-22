@@ -33,22 +33,24 @@ namespace budget4home.Controllers
         public async Task<IActionResult> Get(long groupId, int year, int month)
         {
             var userId = UserHelper.GetUserId(HttpContext);
-            var models = await _expenseService.GetAll(userId, groupId, year, month);
+            var models = await _expenseService.GetAllAsync(userId, groupId, year, month);
             var dtos = _mapper.Map<ICollection<ExpenseDto>>(models);
             return Ok(dtos);
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(ExpenseManageDto), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Post([FromBody] ExpenseManageDto dto)
+        [ProducesResponseType(typeof(ExpenseDto), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Post([FromBody] ExpenseAddDto dto)
         {
+            // TODO validate schedule
+
             var userId = UserHelper.GetUserId(HttpContext);
 
             try
             {
                 var model = _mapper.Map<ExpenseModel>(dto);
                 var obj = await _expenseService.AddAsync(userId, model);
-                return Ok(_mapper.Map<ExpenseManageDto>(obj));
+                return Ok(_mapper.Map<ExpenseDto>(obj));
             }
             catch (Exception e)
             {
@@ -57,16 +59,18 @@ namespace budget4home.Controllers
         }
 
         [HttpPut]
-        [ProducesResponseType(typeof(ExpenseManageDto), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Put([FromBody] ExpenseManageDto dto)
+        [ProducesResponseType(typeof(ExpenseDto), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Put([FromBody] ExpenseUpdateDto dto)
         {
+            // TODO validate schedule
+
             var userId = UserHelper.GetUserId(HttpContext);
 
             try
             {
                 var model = _mapper.Map<ExpenseModel>(dto);
                 var obj = await _expenseService.UpdateAsync(userId, model);
-                return Ok(_mapper.Map<ExpenseManageDto>(obj));
+                return Ok(_mapper.Map<ExpenseDto>(obj));
             }
             catch
             {

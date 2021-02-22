@@ -42,6 +42,15 @@ namespace budget4home.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<long?>("ParentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("ScheduleBy")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ScheduleTotal")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
@@ -53,6 +62,8 @@ namespace budget4home.Migrations
                     b.HasIndex("GroupId");
 
                     b.HasIndex("LabelId");
+
+                    b.HasIndex("ParentId");
 
                     b.ToTable("Expense");
                 });
@@ -121,9 +132,15 @@ namespace budget4home.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("budget4home.Models.ExpenseModel", "Parent")
+                        .WithMany()
+                        .HasForeignKey("ParentId");
+
                     b.Navigation("Group");
 
                     b.Navigation("Label");
+
+                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("budget4home.Models.GroupUserModel", b =>

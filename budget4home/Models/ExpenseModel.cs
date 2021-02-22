@@ -21,6 +21,12 @@ namespace budget4home.Models
         public DateTime Date { get; set; }
         public string Comments { get; set; }
 
+        public int ScheduleBy { get; set; } = 1;
+        public int ScheduleTotal { get; set; } = 1;
+        public long? ParentId { get; set; }
+        [ForeignKey("ParentId")]
+        public ExpenseModel Parent { get; set; }
+
         [Required]
         public long GroupId { get; set; }
         [ForeignKey("GroupId")]

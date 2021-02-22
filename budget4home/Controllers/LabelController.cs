@@ -30,7 +30,7 @@ namespace budget4home.Controllers
         public async Task<IActionResult> Get(long groupId)
         {
             var userId = UserHelper.GetUserId(HttpContext);
-            var models = await _labelService.GetAll(userId, groupId);
+            var models = await _labelService.GetAllAsync(userId, groupId);
             return Ok(_mapper.Map<List<LabelModel>, ICollection<LabelDto>>(models));
         }
 

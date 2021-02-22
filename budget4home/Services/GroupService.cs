@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using budget4home.Helpers;
 using budget4home.Models;
+using budget4home.Models.Configurations;
 using budget4home.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,16 +22,17 @@ namespace budget4home.Services
     {
         private readonly IGroupRepository _groupRepository;
         private readonly IValidateHelper _validateHelper;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly Context _context;
 
         public GroupService(
             IGroupRepository groupRepository,
             IValidateHelper validateHelper,
-            Context context)
+            IUnitOfWork unitOfWork)
         {
             _groupRepository = groupRepository;
             _validateHelper = validateHelper;
-            _context = context;
+            _unitOfWork = unitOfWork;
         }
 
         public Task<List<GroupModel>> GetAll(string userId)
@@ -51,7 +53,7 @@ namespace budget4home.Services
             }
 
             var ret = await _groupRepository.AddAsync(model);
-            if (ret != null && await _context.SaveChangesAsync() > 0)
+            if (ret != null && await _unitOfWork.CommitAsync() > 0)
                 return ret;
             return null;
         }
@@ -65,7 +67,7 @@ namespace budget4home.Services
             await _validateHelper.CheckGroupAsync(model.Id, userId);
 
             var ret = await _groupRepository.UpdateAsync(model);
-            if (ret != null && await _context.SaveChangesAsync() > 0)
+            if (ret != null && await _unitOfWork.CommitAsync() > 0)
                 return ret;
             return null;
         }
@@ -75,7 +77,7 @@ namespace budget4home.Services
             await _validateHelper.CheckGroupAsync(id, userId);
 
             var ret = await _groupRepository.DeleteAsync(id);
-            if (ret && await _context.SaveChangesAsync() > 0)
+            if (ret && await _unitOfWork.CommitAsync() > 0)
                 return ret;
             return false;
         }

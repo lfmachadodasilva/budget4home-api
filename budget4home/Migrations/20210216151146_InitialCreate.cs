@@ -69,6 +69,9 @@ namespace budget4home.Migrations
                     Value = table.Column<decimal>(type: "numeric", nullable: false),
                     Date = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     Comments = table.Column<string>(type: "text", nullable: true),
+                    ScheduleBy = table.Column<int>(type: "integer", nullable: false),
+                    ScheduleTotal = table.Column<int>(type: "integer", nullable: false),
+                    ParentId = table.Column<long>(type: "bigint", nullable: true),
                     GroupId = table.Column<long>(type: "bigint", nullable: false),
                     LabelId = table.Column<long>(type: "bigint", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false)
@@ -76,6 +79,12 @@ namespace budget4home.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Expense", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Expense_Expense_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "Expense",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Expense_Group_GroupId",
                         column: x => x.GroupId,
@@ -99,6 +108,11 @@ namespace budget4home.Migrations
                 name: "IX_Expense_LabelId",
                 table: "Expense",
                 column: "LabelId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Expense_ParentId",
+                table: "Expense",
+                column: "ParentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Label_GroupId",

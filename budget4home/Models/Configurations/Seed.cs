@@ -1,6 +1,6 @@
 using System;
 
-namespace budget4home.Models
+namespace budget4home.Models.Configurations
 {
     public static class Seed
     {
@@ -94,7 +94,7 @@ namespace budget4home.Models
             context.Expenses.Add(new ExpenseModel
             {
                 Type = ExpenseType.Outcoming,
-                Name = "Expense 1",
+                Name = "Expense 3",
                 Value = 300,
                 Date = DateTime.Today.AddMonths(-1),
                 LabelId = label1.Entity.Id,
@@ -103,7 +103,7 @@ namespace budget4home.Models
             context.Expenses.Add(new ExpenseModel
             {
                 Type = ExpenseType.Incoming,
-                Name = "Expense 2",
+                Name = "Expense 4",
                 Value = 400,
                 Date = DateTime.Today.AddMonths(-1),
                 LabelId = label2.Entity.Id,
@@ -112,7 +112,7 @@ namespace budget4home.Models
             context.Expenses.Add(new ExpenseModel
             {
                 Type = ExpenseType.Outcoming,
-                Name = "Expense 1",
+                Name = "Expense 5",
                 Value = 150,
                 Date = DateTime.Today.AddMonths(-2),
                 LabelId = label1.Entity.Id,
