@@ -1,4 +1,5 @@
 using budget4home.Models;
+using budget4home.Models.Configurations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

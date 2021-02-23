@@ -1,5 +1,6 @@
 using budget4home.Helpers;
 using budget4home.Models;
+using budget4home.Models.Configurations;
 using budget4home.Repositories;
 using budget4home.Services;
 using FirebaseAdmin;
@@ -119,6 +120,7 @@ namespace budget4home
 
 
             #region dependency injection 
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
             services.AddTransient<IValidateHelper, ValidateHelper>();
 
             services.AddTransient<ILabelService, LabelService>();
