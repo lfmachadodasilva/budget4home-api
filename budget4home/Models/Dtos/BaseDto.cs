@@ -1,31 +1,20 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace budget4home.Models
 {
-    public interface IModel<T>
+    public interface IDto<T>
     {
-        [Key]
         T Id { get; set; }
-
-        [Required]
         string Name { get; set; }
     }
 
-    public abstract class BaseModel : IModel<long>
+    public abstract class BaseDto : IDto<long>
     {
-        [Key]
         public long Id { get; set; }
-
-        [Required]
         public string Name { get; set; }
     }
 
-    public abstract class BaseModelString : IModel<string>
+    public abstract class BaseDtoString : IDto<string>
     {
-        [Key]
         public string Id { get; set; }
-
-        [Required]
         public string Name { get; set; }
     }
 }

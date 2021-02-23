@@ -1,3 +1,4 @@
+using budget4home.Helpers;
 using budget4home.Models;
 using budget4home.Repositories;
 using budget4home.Services;
@@ -36,7 +37,7 @@ namespace budget4home
                             .WithOrigins(
                                 "http://localhost:3000",
                                 "https://localhost:3000",
-                                "http://lfmachadodasilva.github.io/",
+                                "http://lfmachadodasilva.github.io",
                                 "http://lfmachadodasilva.github.io/budget4home")
                             .AllowAnyMethod()
                             .AllowAnyHeader()
@@ -80,6 +81,7 @@ namespace budget4home
             }
 
             services.AddControllers();
+            services.AddRouting(options => options.LowercaseUrls = true);
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc(
@@ -112,10 +114,23 @@ namespace budget4home
                 });
             });
 
-            // dependency injection
+            // Automapper
+            services.AddAutoMapper(typeof(MapperProfile));
+
+
+            #region dependency injection 
+            services.AddTransient<IValidateHelper, ValidateHelper>();
+
             services.AddTransient<ILabelService, LabelService>();
             services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IGroupService, GroupService>();
+            services.AddTransient<IExpenseService, ExpenseService>();
+
             services.AddTransient<IFirebaseRepository, FirebaseRepository>();
+            services.AddTransient<IExpenseRepository, ExpenseRepository>();
+            services.AddTransient<IGroupRepository, GroupRepository>();
+            services.AddTransient<ILabelRepository, LabelRepository>();
+            #endregion
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
