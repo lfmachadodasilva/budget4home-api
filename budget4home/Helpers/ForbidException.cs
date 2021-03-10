@@ -2,18 +2,18 @@ using System;
 
 namespace budget4home.Helpers
 {
-    public class ForbidException : Exception
+    public class DbException : Exception
     {
-        public ForbidException()
+        public DbException()
         {
         }
 
-        public ForbidException(string message)
+        public DbException(string message)
             : base(message)
         {
         }
 
-        public ForbidException(string message, Exception inner)
+        public DbException(string message, Exception inner)
             : base(message, inner)
         {
         }
