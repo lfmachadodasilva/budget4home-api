@@ -1,6 +1,5 @@
-using System;
+using budget4home.App.Groups;
 using Xunit;
-using budget4home.Models;
 using FluentAssertions;
 
 namespace budget4home.tests

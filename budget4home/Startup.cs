@@ -1,8 +1,14 @@
+using budget4home.App.Expenses;
+using budget4home.App.Expenses.Validators;
+using budget4home.App.Groups;
+using budget4home.App.Groups.Validators;
+using budget4home.App.Labels;
+using budget4home.App.Labels.Validators;
+using budget4home.App.Users;
+using budget4home.App.Users.Validators;
+using budget4home.Extensions;
 using budget4home.Helpers;
-using budget4home.Models;
-using budget4home.Models.Configurations;
-using budget4home.Repositories;
-using budget4home.Services;
+using budget4home.Util;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -29,110 +35,15 @@ namespace budget4home
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors(options =>
-            {
-                options.AddPolicy("AllowAll",
-                    builder =>
-                    {
-                        builder
-                            .WithOrigins(
-                                "http://localhost:3000",
-                                "https://localhost:3000",
-                                "http://lfmachadodasilva.github.io",
-                                "http://lfmachadodasilva.github.io/budget4home")
-                            .AllowAnyMethod()
-                            .AllowAnyHeader()
-                            .AllowCredentials();
-                    });
-            });
-
-            var firebaseAdmin = Configuration.GetSection("AppConfig:FirebaseAdmin");
-            FirebaseApp.Create(new AppOptions()
-            {
-                Credential = GoogleCredential.FromJson(firebaseAdmin.Value)
-            });
-
-            services
-                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    var projectId = Configuration.GetSection("Firebase:ProjectId").Value;
-                    options.Authority = $"https://securetoken.google.com/{projectId}";
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidIssuer = $"https://securetoken.google.com/{projectId}",
-                        ValidateAudience = true,
-                        ValidAudience = projectId,
-                        ValidateLifetime = true
-                    };
-                });
-
-            var connectionStringName = Configuration.GetSection("AppConfig:ConnectionString").Value;
-            if (connectionStringName == "Local")
-            {
-                services.AddDbContext<Context>(opt => opt.UseInMemoryDatabase("budget4home"));
-            }
-            else
-            {
-                services.AddDbContext<Context>(
-                                opt => opt.UseNpgsql(
-                                    Configuration.GetConnectionString(connectionStringName),
-                                    x => x.MigrationsAssembly("budget4home")));
-            }
-
             services.AddControllers();
             services.AddRouting(options => options.LowercaseUrls = true);
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc(
-                    "v1",
-                    new OpenApiInfo
-                    {
-                        Title = "budget4home",
-                        Description = $"buildVersion: {Configuration.GetSection("AppConfig:BuildVersion").Value}",
-                        Version = "v1"
-                    });
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    Description =
-                        "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
-                });
 
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
-                        },
-                        new[] { "readAccess", "writeAccess" }
-                    }
-                });
-            });
-
-            // Automapper
-            services.AddAutoMapper(typeof(MapperProfile));
-
-
-            #region dependency injection 
-            services.AddTransient<IUnitOfWork, UnitOfWork>();
-            services.AddTransient<IValidateHelper, ValidateHelper>();
-
-            services.AddTransient<ILabelService, LabelService>();
-            services.AddTransient<IUserService, UserService>();
-            services.AddTransient<IGroupService, GroupService>();
-            services.AddTransient<IExpenseService, ExpenseService>();
-
-            services.AddTransient<IFirebaseRepository, FirebaseRepository>();
-            services.AddTransient<IExpenseRepository, ExpenseRepository>();
-            services.AddTransient<IGroupRepository, GroupRepository>();
-            services.AddTransient<ILabelRepository, LabelRepository>();
-            #endregion
+            services
+                .SetupContext(Configuration)
+                .SetupAuth(Configuration)
+                .SetupSwagger(Configuration)
+                .SetupDependecyInjection()
+                .SetupProfiles();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
