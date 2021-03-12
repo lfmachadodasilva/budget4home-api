@@ -28,7 +28,7 @@ namespace budget4home.App.Users
                 ret.Add(new UserModel
                 {
                     Id = user.Uid,
-                    Name = string.IsNullOrEmpty(user.DisplayName) ? user.DisplayName : user.Email.Split("@")[0],
+                    Name = string.IsNullOrEmpty(user.DisplayName) ? user.Email.Split("@")[0] : user.DisplayName,
                     Email = user.Email,
                     PhotoUrl = user.PhotoUrl
                 });
