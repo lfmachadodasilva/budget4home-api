@@ -11,7 +11,7 @@ namespace budget4home.App.Expenses
 {
     public interface IExpenseRepository : IRepository<ExpenseModel, long>
     {
-        Task<List<ExpenseModel>> GetAllAsync(string userId, long groupId, int year, int month);
+        Task<List<ExpenseModel>> GetAllAsync(string userId, long groupId, int? year, int? month);
         Task<List<KeyValuePair<long, decimal>>> GetValueByLabelAsync(
             long groupId,
             DateTime from,
@@ -30,13 +30,22 @@ namespace budget4home.App.Expenses
             _context = context;
         }
 
-        public Task<List<ExpenseModel>> GetAllAsync(string userId, long groupId, int year, int month)
+        public Task<List<ExpenseModel>> GetAllAsync(string userId, long groupId, int? year, int? month)
         {
-            return
+            if (year.HasValue && month.HasValue)
+            {
+                return
                 GetAll()
                 .Include(x => x.Label)
                 .Include(x => x.Group)
                 .Where(x => x.Date.Year == year && x.Date.Month == month && x.GroupId == groupId)
+                .ToListAsync();
+            }
+            return
+                GetAll()
+                .Include(x => x.Label)
+                .Include(x => x.Group)
+                .Where(x => x.GroupId == groupId)
                 .ToListAsync();
         }
 
