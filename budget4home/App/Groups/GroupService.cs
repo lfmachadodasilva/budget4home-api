@@ -11,6 +11,7 @@ namespace budget4home.App.Groups
     {
         Task<List<GroupModel>> GetAll(string userId);
         Task<List<GroupFullModel>> GetAllFullAsync(string userId);
+        Task<GroupModel> GetByIdAsync(long id);
         Task<GroupModel> AddAsync(string userId, GroupModel model);
         Task<GroupModel> UpdateAsync(string userId, GroupModel model);
         Task<bool> DeleteAsync(string userId, long id);
@@ -37,6 +38,11 @@ namespace budget4home.App.Groups
         public Task<List<GroupFullModel>> GetAllFullAsync(string userId)
         {
             return _groupRepository.GetAllFullAsync(userId);
+        }
+
+        public Task<GroupModel> GetByIdAsync(long id)
+        {
+            return _groupRepository.GetByIdAsync(id);
         }
 
         public async Task<GroupModel> AddAsync(string userId, GroupModel model)

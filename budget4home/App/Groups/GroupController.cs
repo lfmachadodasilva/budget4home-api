@@ -19,6 +19,7 @@ namespace budget4home.App.Groups
     {
         private readonly IGroupService _groupService;
         private readonly IAddGroupValidator _addValidator;
+        private readonly IGetByIdValidator _getByIdValidator;
         private readonly IUpdateGroupValidator _updateValidator;
         private readonly IDeleteGroupValidator _deleteValidator;
         private readonly IMapper _mapper;
@@ -26,12 +27,14 @@ namespace budget4home.App.Groups
         public GroupController(
             IGroupService groupService,
             IAddGroupValidator addValidator,
+            IGetByIdValidator getByIdValidator,
             IUpdateGroupValidator updateValidator,
             IDeleteGroupValidator deleteValidator,
             IMapper mapper)
         {
             _groupService = groupService;
             _addValidator = addValidator;
+            _getByIdValidator = getByIdValidator;
             _updateValidator = updateValidator;
             _deleteValidator = deleteValidator;
             _mapper = mapper;
@@ -53,6 +56,32 @@ namespace budget4home.App.Groups
             var userId = UserHelper.GetUserId(HttpContext);
             var objs = await _groupService.GetAllFullAsync(userId);
             return Ok(_mapper.Map<ICollection<GetFullGroupResponse>>(objs));
+        }
+
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(GetByIdGroupResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetById(long id)
+        {
+            var userId = UserHelper.GetUserId(HttpContext);
+
+            try
+            {
+                await _getByIdValidator.ValidateAsync(userId, id);
+                var obj = await _groupService.GetByIdAsync(id);
+                return Ok(_mapper.Map<GetByIdGroupResponse>(obj));
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (DbException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest();
+            }
         }
 
         [HttpPost]

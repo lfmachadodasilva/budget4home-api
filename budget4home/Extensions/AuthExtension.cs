@@ -24,8 +24,8 @@ namespace budget4home.Extensions
                     {
                         builder
                             .WithOrigins(
-                                "http://localhost:3000",
                                 "https://localhost:3000",
+                                "https://localhost:3000/budget4home",
                                 "https://lfmachadodasilva.github.io",
                                 "https://lfmachadodasilva.github.io/budget4home")
                             .AllowAnyMethod()

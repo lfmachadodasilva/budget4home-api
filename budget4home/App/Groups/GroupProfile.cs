@@ -20,6 +20,10 @@ namespace budget4home.App.Groups
                 dest =>
                     dest.Users,
                 opt => opt.MapFrom(src => src.Users));
+            CreateMap<GroupModel, GetByIdGroupResponse>().ForMember(
+                dest =>
+                    dest.Users,
+                opt => opt.MapFrom(src => src.Users.Select(u => u.UserId)));
             CreateMap<AddGroupRequest, GroupModel>().ForMember(
                 dest =>
                     dest.Users,

@@ -38,6 +38,7 @@ namespace budget4home.Extensions
                 services.AddTransient<IGroupService, GroupService>();
                 services.AddTransient<IGroupRepository, GroupRepository>();
                 services.AddTransient<IGroupValidator, GroupValidator>();
+                services.AddTransient<IGetByIdValidator, GetByIdValidator>();
                 services.AddTransient<IAddGroupValidator, AddGroupValidator>();
                 services.AddTransient<IDeleteGroupValidator, DeleteGroupValidator>();
                 services.AddTransient<IUpdateGroupValidator, UpdateGroupValidator>();
