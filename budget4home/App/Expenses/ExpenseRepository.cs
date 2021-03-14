@@ -39,6 +39,7 @@ namespace budget4home.App.Expenses
                 .Include(x => x.Label)
                 .Include(x => x.Group)
                 .Where(x => x.Date.Year == year && x.Date.Month == month && x.GroupId == groupId)
+                .OrderBy(x => x.Date).ThenBy(x => x.Name)
                 .ToListAsync();
             }
             return
@@ -46,6 +47,7 @@ namespace budget4home.App.Expenses
                 .Include(x => x.Label)
                 .Include(x => x.Group)
                 .Where(x => x.GroupId == groupId)
+                .OrderBy(x => x.Date).ThenBy(x => x.Name)
                 .ToListAsync();
         }
 

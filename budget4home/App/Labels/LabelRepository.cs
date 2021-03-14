@@ -31,6 +31,7 @@ namespace budget4home.App.Labels
                 .Where(x =>
                     x.Group.Users.Any(x => x.UserId.Equals(userId) &&
                     x.GroupId.Equals(groupId)))
+                .OrderBy(x => x.Name)
                 .ToListAsync();
         }
     }

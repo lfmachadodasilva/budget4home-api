@@ -63,7 +63,7 @@ namespace budget4home.App.Labels
                           CurrValue = curr.Value,
                           LastValue = last.Value
                       };
-            return ret.ToList();
+            return ret.OrderBy(x => x.Name).ToList();
         }
 
         public async Task<LabelModel> AddAsync(string userId, LabelModel model)

@@ -40,7 +40,8 @@ namespace budget4home.App.Groups
         {
             return base.GetAll()
                 .Include(x => x.Users)
-                .Where(x => x.Users.Any(y => y.UserId.Equals(userId)));
+                .Where(x => x.Users.Any(y => y.UserId.Equals(userId)))
+                .OrderBy(x => x.Name);
         }
 
         public async Task<List<GroupFullModel>> GetAllFullAsync(string userId)
@@ -63,7 +64,7 @@ namespace budget4home.App.Groups
                     Name = group.Name,
                     Users = usersTmp
                 };
-            }).ToList();
+            }).OrderBy(g => g.Name).ToList();
         }
 
         public override Task<GroupModel> GetByIdAsync(long id, bool include)
