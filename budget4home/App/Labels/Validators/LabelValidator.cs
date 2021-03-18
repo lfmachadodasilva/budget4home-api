@@ -7,7 +7,7 @@ namespace budget4home.App.Labels.Validators
     {
         bool Validate(string name);
 
-        Task<bool> ValidateAsync(long labelId, long groupId);
+        Task<LabelModel> ValidateAsync(long labelId, long? groupId = null);
     }
 
     public class LabelValidator : ILabelValidator
@@ -29,7 +29,7 @@ namespace budget4home.App.Labels.Validators
             return true;
         }
 
-        public async Task<bool> ValidateAsync(long labelId, long groupId)
+        public async Task<LabelModel> ValidateAsync(long labelId, long? groupId = null)
         {
             var label = await _labelRepository.GetByIdAsync(labelId, true);
 
@@ -38,12 +38,12 @@ namespace budget4home.App.Labels.Validators
                 throw new ArgumentException("INVALID_LABEL");
             }
 
-            if (!label.GroupId.Equals(groupId))
+            if (groupId.HasValue && !label.GroupId.Equals(groupId))
             {
                 throw new ArgumentException("INVALID_LABEL_GROUP");
             }
 
-            return true;
+            return label;
         }
     }
 }

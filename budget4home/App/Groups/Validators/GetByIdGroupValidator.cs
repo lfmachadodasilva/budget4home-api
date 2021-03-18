@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace budget4home.App.Groups.Validators
 {
-    public interface IGetByIdValidator
+    public interface IGetByIdGroupValidator
     {
         Task<bool> ValidateAsync(string userId, long groupId);
     }
 
-    public class GetByIdValidator : IGetByIdValidator
+    public class GetByIdGroupValidator : IGetByIdGroupValidator
     {
         private readonly IGroupValidator _groupValidator;
 
-        public GetByIdValidator(IGroupValidator groupValidator)
+        public GetByIdGroupValidator(IGroupValidator groupValidator)
         {
             _groupValidator = groupValidator;
         }

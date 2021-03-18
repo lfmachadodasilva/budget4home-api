@@ -30,6 +30,18 @@ namespace budget4home.App.Expenses
             _context = context;
         }
 
+        public override Task<ExpenseModel> GetByIdAsync(long id, bool include = false)
+        {
+            if(include)
+            {
+                return _context.Expenses
+                    .Include(e => e.Label)
+                    .FirstOrDefaultAsync(e => e.Id.Equals(id));
+            }
+
+            return base.GetByIdAsync(id, include);
+        }
+
         public Task<List<ExpenseModel>> GetAllAsync(string userId, long groupId, int? year, int? month)
         {
             if (year.HasValue && month.HasValue)

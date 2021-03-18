@@ -20,6 +20,7 @@ namespace budget4home.Extensions
                 services.AddTransient<ILabelService, LabelService>();
                 services.AddTransient<ILabelRepository, LabelRepository>();
                 services.AddTransient<ILabelValidator, LabelValidator>();
+                services.AddTransient<IGetByIdLabelValidator, GetByIdLabelValidator>();
                 services.AddTransient<IAddLabelValidator, AddLabelValidator>();
                 services.AddTransient<IDeleteLabelValidator, DeleteLabelValidator>();
                 services.AddTransient<IGetFullLabelsValidator, GetFullLabelsValidator>();
@@ -29,6 +30,7 @@ namespace budget4home.Extensions
                 services.AddTransient<IExpenseService, ExpenseService>();
                 services.AddTransient<IExpenseRepository, ExpenseRepository>();
                 services.AddTransient<IExpenseValidator, ExpenseValidator>();
+                services.AddTransient<IGetByIdExpenseValidator, GetByIdExpenseValidator>();
                 services.AddTransient<IAddExpenseValidator, AddExpenseValidator>();
                 services.AddTransient<IDeleteExpenseValidator, DeleteExpenseValidator>();
                 services.AddTransient<IGetExpensesValidator, GetExpensesValidator>();
@@ -38,7 +40,7 @@ namespace budget4home.Extensions
                 services.AddTransient<IGroupService, GroupService>();
                 services.AddTransient<IGroupRepository, GroupRepository>();
                 services.AddTransient<IGroupValidator, GroupValidator>();
-                services.AddTransient<IGetByIdValidator, GetByIdValidator>();
+                services.AddTransient<IGetByIdGroupValidator, GetByIdGroupValidator>();
                 services.AddTransient<IAddGroupValidator, AddGroupValidator>();
                 services.AddTransient<IDeleteGroupValidator, DeleteGroupValidator>();
                 services.AddTransient<IUpdateGroupValidator, UpdateGroupValidator>();

@@ -11,8 +11,8 @@ namespace budget4home.App.Labels
             CreateMap<LabelModel, LabelModel>()
                 // Foreign object need to be ignored
                 .ForMember(dest => dest.Group, act => act.Ignore());
-            CreateMap<GetLabelsResponse, LabelModel>().ReverseMap();
-            CreateMap<GetFullLabelsResponse, LabelFullModel>().ReverseMap();
+            CreateMap<GetLabelResponse, LabelModel>().ReverseMap();
+            CreateMap<GetFullLabelResponse, LabelFullModel>().ReverseMap();
             CreateMap<AddLabelRequest, LabelModel>().ReverseMap();
             CreateMap<UpdateLabelRequest, LabelModel>().ReverseMap();
         }

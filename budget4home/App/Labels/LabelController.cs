@@ -19,6 +19,7 @@ namespace budget4home.App.Labels
     {
         private readonly ILabelService _labelService;
         private readonly IGetFullLabelsValidator _getFullValidator;
+        private readonly IGetByIdLabelValidator _getByIdValidator;
         private readonly IAddLabelValidator _addValidator;
         private readonly IUpdateLabelValidator _updateValidator;
         private readonly IDeleteLabelValidator _deleteValidator;
@@ -27,6 +28,7 @@ namespace budget4home.App.Labels
         public LabelController(
             ILabelService labelService,
             IGetFullLabelsValidator getFullValidator,
+            IGetByIdLabelValidator getByIdValidator,
             IAddLabelValidator addValidator,
             IUpdateLabelValidator updateValidator,
             IDeleteLabelValidator deleteValidator,
@@ -34,6 +36,7 @@ namespace budget4home.App.Labels
         {
             _labelService = labelService;
             _getFullValidator = getFullValidator;
+            _getByIdValidator = getByIdValidator;
             _addValidator = addValidator;
             _updateValidator = updateValidator;
             _deleteValidator = deleteValidator;
@@ -41,16 +44,16 @@ namespace budget4home.App.Labels
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(ICollection<GetLabelsResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ICollection<GetLabelResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get(long groupId)
         {
             var userId = UserHelper.GetUserId(HttpContext);
             var models = await _labelService.GetAllAsync(userId, groupId);
-            return Ok(_mapper.Map<ICollection<GetLabelsResponse>>(models));
+            return Ok(_mapper.Map<ICollection<GetLabelResponse>>(models));
         }
 
         [HttpGet("/api/full/[controller]")]
-        [ProducesResponseType(typeof(ICollection<GetFullLabelsResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ICollection<GetFullLabelResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll([FromQuery] GetFullLabelsRequest request)
         {
             var userId = UserHelper.GetUserId(HttpContext);
@@ -63,10 +66,36 @@ namespace budget4home.App.Labels
                     request.Group,
                     request.Year,
                     request.Month);
-                var dtos = _mapper.Map<ICollection<GetFullLabelsResponse>>(models);
+                var dtos = _mapper.Map<ICollection<GetFullLabelResponse>>(models);
                 return Ok(dtos);
             }
             catch (ArgumentException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(GetLabelResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetById(long id)
+        {
+            var userId = UserHelper.GetUserId(HttpContext);
+
+            try
+            {
+                await _getByIdValidator.ValidateAsync(userId, id);
+                var obj = await _labelService.GetByIdAsync(id);
+                return Ok(_mapper.Map<GetLabelResponse>(obj));
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (DbException e)
             {
                 return BadRequest(e.Message);
             }

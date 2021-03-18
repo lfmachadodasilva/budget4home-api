@@ -11,6 +11,7 @@ namespace budget4home.App.Labels
     public interface ILabelService
     {
         Task<List<LabelModel>> GetAllAsync(string userId, long groupId);
+        Task<LabelModel> GetByIdAsync(long id);
         Task<List<LabelFullModel>> GetAllFullAsync(string userId, long groupId, int year, int month);
         Task<LabelModel> AddAsync(string userId, LabelModel model);
         Task<LabelModel> UpdateAsync(string userId, LabelModel model);
@@ -36,6 +37,11 @@ namespace budget4home.App.Labels
         public Task<List<LabelModel>> GetAllAsync(string userId, long groupId)
         {
             return _labelRepository.GetAllAsync(userId, groupId);
+        }
+
+        public Task<LabelModel> GetByIdAsync(long id)
+        {
+            return _labelRepository.GetByIdAsync(id);
         }
 
         public async Task<List<LabelFullModel>> GetAllFullAsync(string userId, long groupId, int year, int month)

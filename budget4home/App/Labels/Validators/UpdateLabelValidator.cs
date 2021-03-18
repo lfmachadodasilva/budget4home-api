@@ -23,7 +23,8 @@ namespace budget4home.App.Labels.Validators
         public async Task<bool> ValidateAsync(string userId, UpdateLabelRequest request)
         {
             _labelValidator.Validate(request.Name);
-            await _groupValidator.ValidateAsync(userId, request.Id);
+            var label = await _labelValidator.ValidateAsync(request.Id);
+            await _groupValidator.ValidateAsync(userId, label.GroupId);
 
             return true;
         }

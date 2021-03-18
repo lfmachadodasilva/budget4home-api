@@ -1,6 +1,6 @@
 ﻿namespace budget4home.App.Labels.Responses
 {
-    public class GetFullLabelsResponse
+    public class GetFullLabelResponse
     {
         public long Id { get; set; }
         public string Name { get; set; }

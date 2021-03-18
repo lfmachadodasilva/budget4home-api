@@ -19,6 +19,7 @@ namespace budget4home.App.Expenses
     {
         private readonly IExpenseService _expenseService;
         private readonly IGetExpensesValidator _getValidator;
+        private readonly IGetByIdExpenseValidator _getByIdValidator;
         private readonly IAddExpenseValidator _addValidator;
         private readonly IUpdateExpenseValidator _updateValidator;
         private readonly IDeleteExpenseValidator _deleteValidator;
@@ -27,6 +28,7 @@ namespace budget4home.App.Expenses
         public ExpenseController(
             IExpenseService expenseService,
             IGetExpensesValidator getValidator,
+            IGetByIdExpenseValidator getByIdValidator,
             IAddExpenseValidator addValidator,
             IUpdateExpenseValidator updateValidator,
             IDeleteExpenseValidator deleteValidator,
@@ -34,6 +36,7 @@ namespace budget4home.App.Expenses
         {
             _expenseService = expenseService;
             _getValidator = getValidator;
+            _getByIdValidator = getByIdValidator;
             _addValidator = addValidator;
             _updateValidator = updateValidator;
             _deleteValidator = deleteValidator;
@@ -42,7 +45,7 @@ namespace budget4home.App.Expenses
 
         [HttpGet]
         [ProducesResponseType(typeof(ICollection<GetExpenseResponse>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Get([FromQuery]GetExpensesRequest request)
+        public async Task<IActionResult> GetAll([FromQuery]GetExpensesRequest request)
         {
             var userId = UserHelper.GetUserId(HttpContext);
 
@@ -58,6 +61,32 @@ namespace budget4home.App.Expenses
                 return Ok(dtos);
             }
             catch (ArgumentException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(GetExpenseResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetById(long id)
+        {
+            var userId = UserHelper.GetUserId(HttpContext);
+
+            try
+            {
+                await _getByIdValidator.ValidateAsync(userId, id);
+                var obj = await _expenseService.GetByIdAsync(id);
+                return Ok(_mapper.Map<GetExpenseResponse>(obj));
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (DbException e)
             {
                 return BadRequest(e.Message);
             }

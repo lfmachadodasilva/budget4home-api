@@ -19,7 +19,7 @@ namespace budget4home.App.Groups
     {
         private readonly IGroupService _groupService;
         private readonly IAddGroupValidator _addValidator;
-        private readonly IGetByIdValidator _getByIdValidator;
+        private readonly IGetByIdGroupValidator _getByIdValidator;
         private readonly IUpdateGroupValidator _updateValidator;
         private readonly IDeleteGroupValidator _deleteValidator;
         private readonly IMapper _mapper;
@@ -27,7 +27,7 @@ namespace budget4home.App.Groups
         public GroupController(
             IGroupService groupService,
             IAddGroupValidator addValidator,
-            IGetByIdValidator getByIdValidator,
+            IGetByIdGroupValidator getByIdValidator,
             IUpdateGroupValidator updateValidator,
             IDeleteGroupValidator deleteValidator,
             IMapper mapper)
@@ -78,7 +78,7 @@ namespace budget4home.App.Groups
             {
                 return BadRequest(e.Message);
             }
-            catch (Exception e)
+            catch
             {
                 return BadRequest();
             }
