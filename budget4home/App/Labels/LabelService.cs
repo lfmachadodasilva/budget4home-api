@@ -84,6 +84,9 @@ namespace budget4home.App.Labels
 
         public async Task<LabelModel> UpdateAsync(string userId, LabelModel model)
         {
+            var label = await _labelRepository.GetByIdAsync(model.Id);
+            model.GroupId = label.GroupId;
+            
             var ret = await _labelRepository.UpdateAsync(model);
             if (!(ret != null && await _unitOfWork.CommitAsync() > 0))
             {
