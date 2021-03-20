@@ -150,7 +150,7 @@ namespace budget4home.App.Expenses
             }
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         [ProducesResponseType(typeof(long), StatusCodes.Status200OK)]
         public async Task<IActionResult> Delete(long id, [FromQuery]bool includeSchedule = false)
         {

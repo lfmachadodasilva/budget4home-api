@@ -75,9 +75,10 @@ namespace budget4home.App.Labels
         public async Task<LabelModel> AddAsync(string userId, LabelModel model)
         {
             var ret = await _labelRepository.AddAsync(model);
-            if (!(ret != null && await _unitOfWork.CommitAsync() > 0))
+            var commitedItems = await _unitOfWork.CommitAsync();
+            if (commitedItems <= 0)
             {
-                throw new DbException("ERROR_EXPENSE_UPDATE");
+                throw new DbException("ERROR_EXPENSE_DELETE");
             }
             return ret;
         }
@@ -88,17 +89,19 @@ namespace budget4home.App.Labels
             model.GroupId = label.GroupId;
             
             var ret = await _labelRepository.UpdateAsync(model);
-            if (!(ret != null && await _unitOfWork.CommitAsync() > 0))
+            var commitedItems = await _unitOfWork.CommitAsync();
+            if (commitedItems <= 0)
             {
-                throw new DbException("ERROR_EXPENSE_UPDATE");
+                throw new DbException("ERROR_EXPENSE_DELETE");
             }
             return ret;
         }
 
         public async Task<bool> DeleteAsync(string userId, long id)
         {
-            var ret = await _labelRepository.DeleteAsync(id);
-            if (!(!ret && await _unitOfWork.CommitAsync() > 0))
+            await _labelRepository.DeleteAsync(id);
+            var commitedItems = await _unitOfWork.CommitAsync();
+            if (commitedItems <= 0)
             {
                 throw new DbException("ERROR_EXPENSE_DELETE");
             }

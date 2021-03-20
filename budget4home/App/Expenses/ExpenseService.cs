@@ -96,19 +96,20 @@ namespace budget4home.App.Expenses
             model.ScheduleTotal = expense.ScheduleTotal;
 
             var ret = await _expenseRepository.UpdateAsync(model);
-            if (!(ret != null && await _unitOfWork.CommitAsync() > 0))
+            var commitedItems = await _unitOfWork.CommitAsync();
+            if (commitedItems <= 0)
             {
-                throw new DbException("ERROR_EXPENSE_UPDATE");
+                throw new DbException("ERROR_EXPENSE_DELETE");
             }
             return ret;
         }
 
         public async Task<bool> DeleteAsync(string userId, long id, bool includeSchedule)
         {
-            var expenseToDelete = await _expenseRepository.GetByIdAsync(id);
-
             if (includeSchedule)
             {
+                var expenseToDelete = await _expenseRepository.GetByIdAsync(id);
+
                 // check and delete schedule
                 var parentId = expenseToDelete.ParentId ?? expenseToDelete.Id;
                 var lstToDelete = new List<long>(await _expenseRepository.GetAllByParentAsync(parentId));
@@ -119,8 +120,9 @@ namespace budget4home.App.Expenses
                 id = parentId;
             }
 
-            var ret = await _expenseRepository.DeleteAsync(id);
-            if (!(!ret && await _unitOfWork.CommitAsync() > 0))
+            await _expenseRepository.DeleteAsync(id);
+            var commitedItems = await _unitOfWork.CommitAsync();
+            if(commitedItems <= 0)
             {
                 throw new DbException("ERROR_EXPENSE_DELETE");
             }

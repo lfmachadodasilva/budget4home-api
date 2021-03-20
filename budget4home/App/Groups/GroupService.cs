@@ -48,9 +48,10 @@ namespace budget4home.App.Groups
         public async Task<GroupModel> AddAsync(string userId, GroupModel model)
         {
             var ret = await _groupRepository.AddAsync(model);
-            if (!(ret != null && await _unitOfWork.CommitAsync() > 0))
+            var commitedItems = await _unitOfWork.CommitAsync();
+            if (commitedItems <= 0)
             {
-                throw new DbException("ERROR_EXPENSE_UPDATE");
+                throw new DbException("ERROR_EXPENSE_DELETE");
             }
             return ret;
         }
@@ -58,19 +59,21 @@ namespace budget4home.App.Groups
         public async Task<GroupModel> UpdateAsync(string userId, GroupModel model)
         {
             var ret = await _groupRepository.UpdateAsync(model);
-            if (!(ret != null && await _unitOfWork.CommitAsync() > 0))
+            var commitedItems = await _unitOfWork.CommitAsync();
+            if (commitedItems <= 0)
             {
-                throw new DbException("ERROR_EXPENSE_UPDATE");
+                throw new DbException("ERROR_EXPENSE_DELETE");
             }
             return ret;
         }
 
         public async Task<bool> DeleteAsync(string userId, long id)
         {
-            var ret = await _groupRepository.DeleteAsync(id);
-            if (!(!ret && await _unitOfWork.CommitAsync() > 0))
+            await _groupRepository.DeleteAsync(id);
+            var commitedItems = await _unitOfWork.CommitAsync();
+            if (commitedItems <= 0)
             {
-                throw new DbException("ERROR_EXPENSE_UPDATE");
+                throw new DbException("ERROR_EXPENSE_DELETE");
             }
             return true;
         }

@@ -138,7 +138,7 @@ namespace budget4home.App.Groups
             }
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         [ProducesResponseType(typeof(long), StatusCodes.Status200OK)]
         public async Task<IActionResult> Delete(long id)
         {

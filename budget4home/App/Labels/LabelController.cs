@@ -159,7 +159,7 @@ namespace budget4home.App.Labels
             }
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         public async Task<IActionResult> Delete(long id)
         {
