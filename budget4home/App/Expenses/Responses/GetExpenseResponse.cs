@@ -4,6 +4,7 @@ namespace budget4home.App.Expenses.Responses
 {
     public class GetExpenseResponse
     {
+        public long Id { get; set; }
         public string Name { get; set; }
         public ExpenseType Type { get; set; }
         public decimal Value { get; set; }
