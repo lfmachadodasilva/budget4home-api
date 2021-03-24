@@ -64,7 +64,7 @@ namespace budget4home.App.Expenses
 
             if (model.ScheduleTotal > 1 && model.ParentId == null)
             {
-                for (var i = 0; i < model.ScheduleTotal; i++)
+                for (var i = 0; i < model.ScheduleTotal - 1; i++)
                 {
                     var lastModel = _mapper.Map<ExpenseModel>(model);
 
@@ -72,7 +72,7 @@ namespace budget4home.App.Expenses
                     lastModel.Label = null;
                     lastModel.Group = null;
                     lastModel.Date = lastModel.Date.AddMonths(i + 1);
-                    lastModel.ScheduleBy = i + 1;
+                    lastModel.ScheduleBy = i + 2;
                     lastModel.ParentId = model.Id;
 
                     await AddAsync(userId, lastModel);
