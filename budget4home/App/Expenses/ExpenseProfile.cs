@@ -13,7 +13,10 @@ namespace budget4home.App.Expenses
                 .ForMember(dest => dest.Group, act => act.Ignore())
                 .ForMember(dest => dest.Label, act => act.Ignore())
                 .ForMember(dest => dest.Parent, act => act.Ignore());
-            CreateMap<AddExpenseRequest, ExpenseModel>().ReverseMap();
+            CreateMap<AddExpenseRequest, ExpenseModel>()
+                .ForMember(dest => dest.ScheduleTotal, act => act.MapFrom(x => x.Schedule))
+                .ForMember(dest => dest.ScheduleBy, act => act.MapFrom(x => 1))
+                .ReverseMap();
             CreateMap<UpdateExpenseRequest, ExpenseModel>().ReverseMap();
             CreateMap<GetExpenseResponse, ExpenseModel>().ReverseMap();
         }
