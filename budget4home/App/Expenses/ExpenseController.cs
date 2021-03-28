@@ -96,6 +96,23 @@ namespace budget4home.App.Expenses
             }
         }
 
+        [HttpGet("years")]
+        [ProducesResponseType(typeof(GetExpenseResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetYears()
+        {
+            var userId = UserHelper.GetUserId(HttpContext);
+
+            try
+            {
+                var result = await _expenseService.GetYearsAsync(userId);
+                return Ok(result);
+            }
+            catch
+            {
+                return BadRequest();
+            }
+        }
+
         [HttpPost]
         [ProducesResponseType(typeof(long), StatusCodes.Status200OK)]
         public async Task<IActionResult> Post([FromBody] AddExpenseRequest request)

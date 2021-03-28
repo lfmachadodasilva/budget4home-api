@@ -10,6 +10,7 @@ namespace budget4home.App.Expenses
     public interface IExpenseService
     {
         Task<List<ExpenseModel>> GetAllAsync(string userId, long groupId, int? year, int? month);
+        Task<List<int>> GetYearsAsync(string userId);
         Task<ExpenseModel> GetByIdAsync(long id);
         Task<List<KeyValuePair<long, decimal>>> GetValueByLabelAsync(long groupId, DateTime from, DateTime to, bool sum);
         Task<ExpenseModel> AddAsync(string userId, ExpenseModel model);
@@ -36,6 +37,11 @@ namespace budget4home.App.Expenses
         public Task<List<ExpenseModel>> GetAllAsync(string userId, long groupId, int? year, int? month)
         {
             return _expenseRepository.GetAllAsync(userId, groupId, year, month);
+        }
+
+        public Task<List<int>> GetYearsAsync(string userId)
+        {
+            return _expenseRepository.GetYearsAsync(userId);
         }
 
         public Task<ExpenseModel> GetByIdAsync(long id)

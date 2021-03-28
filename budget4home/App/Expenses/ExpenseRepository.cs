@@ -12,6 +12,7 @@ namespace budget4home.App.Expenses
     public interface IExpenseRepository : IRepository<ExpenseModel, long>
     {
         Task<List<ExpenseModel>> GetAllAsync(string userId, long groupId, int? year, int? month);
+        Task<List<int>> GetYearsAsync(string userId);
         Task<List<KeyValuePair<long, decimal>>> GetValueByLabelAsync(
             long groupId,
             DateTime from,
@@ -40,6 +41,19 @@ namespace budget4home.App.Expenses
             }
 
             return base.GetByIdAsync(id, include);
+        }
+
+        public Task<List<int>> GetYearsAsync(string userId)
+        {
+            return _context.Expenses
+                .Include(e => e.Group)
+                    .ThenInclude(e => e.Users)
+                .Where(e => e.Group.Users.Any(u => u.UserId.Equals(userId)))
+                .GroupBy(e => e.Date.Year)
+                .Select(e => e.Key)
+                .OrderByDescending(e => e)
+                .ToListAsync();
+
         }
 
         public Task<List<ExpenseModel>> GetAllAsync(string userId, long groupId, int? year, int? month)
