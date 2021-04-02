@@ -16,6 +16,7 @@ namespace budget4home.App.Labels
         Task<LabelModel> AddAsync(string userId, LabelModel model);
         Task<LabelModel> UpdateAsync(string userId, LabelModel model);
         Task<bool> DeleteAsync(string userId, long id);
+        Task<bool> DeleteByGroupAsync(string userId, long groupId);
     }
 
     public class LabelService : ILabelService
@@ -87,7 +88,7 @@ namespace budget4home.App.Labels
         {
             var label = await _labelRepository.GetByIdAsync(model.Id);
             model.GroupId = label.GroupId;
-            
+
             var ret = await _labelRepository.UpdateAsync(model);
             var commitedItems = await _unitOfWork.CommitAsync();
             if (commitedItems <= 0)
@@ -99,12 +100,31 @@ namespace budget4home.App.Labels
 
         public async Task<bool> DeleteAsync(string userId, long id)
         {
+            // delete all expenses
+            await _expenseService.DeleteByLabelAsync(userId, id);
+
             await _labelRepository.DeleteAsync(id);
             var commitedItems = await _unitOfWork.CommitAsync();
             if (commitedItems <= 0)
             {
                 throw new DbException("ERROR_EXPENSE_DELETE");
             }
+            return true;
+        }
+
+        public async Task<bool> DeleteByGroupAsync(string userId, long groupId)
+        {
+            var toRemove = _labelRepository
+                .GetAll()
+                .Where(l => l.GroupId.Equals(groupId))
+                .Select(l => l.Id)
+                .ToList();
+
+            foreach (var id in toRemove)
+            {
+                await DeleteAsync(userId, id);
+            }
+
             return true;
         }
     }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using budget4home.Helpers;
@@ -16,6 +17,7 @@ namespace budget4home.App.Expenses
         Task<ExpenseModel> AddAsync(string userId, ExpenseModel model);
         Task<ExpenseModel> UpdateAsync(string userId, ExpenseModel model);
         Task<bool> DeleteAsync(string userId, long id, bool includeSchedule);
+        Task<bool> DeleteByLabelAsync(string userId, long labelId);
     }
 
     public class ExpenseService : IExpenseService
@@ -128,9 +130,25 @@ namespace budget4home.App.Expenses
 
             await _expenseRepository.DeleteAsync(id);
             var commitedItems = await _unitOfWork.CommitAsync();
-            if(commitedItems <= 0)
+            if (commitedItems <= 0)
             {
                 throw new DbException("ERROR_EXPENSE_DELETE");
+            }
+
+            return true;
+        }
+
+        public async Task<bool> DeleteByLabelAsync(string userId, long labelId)
+        {
+            var toRemove = _expenseRepository
+                .GetAll()
+                .Where(e => e.LabelId.Equals(labelId))
+                .Select(e => e.Id)
+                .ToList();
+
+            foreach (var id in toRemove)
+            {
+                await DeleteAsync(userId, id, false);
             }
 
             return true;

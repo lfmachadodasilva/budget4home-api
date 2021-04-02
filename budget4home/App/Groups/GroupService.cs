@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using budget4home.App.Labels;
 using budget4home.Helpers;
 using budget4home.Util;
 using Microsoft.EntityFrameworkCore;
@@ -20,13 +21,16 @@ namespace budget4home.App.Groups
     public class GroupService : IGroupService
     {
         private readonly IGroupRepository _groupRepository;
+        private readonly ILabelService _labelService;
         private readonly IUnitOfWork _unitOfWork;
 
         public GroupService(
             IGroupRepository groupRepository,
+            ILabelService labelService,
             IUnitOfWork unitOfWork)
         {
             _groupRepository = groupRepository;
+            _labelService = labelService;
             _unitOfWork = unitOfWork;
         }
 
@@ -69,6 +73,9 @@ namespace budget4home.App.Groups
 
         public async Task<bool> DeleteAsync(string userId, long id)
         {
+            // delete all labels
+            await _labelService.DeleteByGroupAsync(userId, id);
+
             await _groupRepository.DeleteAsync(id);
             var commitedItems = await _unitOfWork.CommitAsync();
             if (commitedItems <= 0)
