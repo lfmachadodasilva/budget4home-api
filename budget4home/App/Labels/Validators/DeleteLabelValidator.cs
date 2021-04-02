@@ -5,21 +5,26 @@ namespace budget4home.App.Labels.Validators
 {
     public interface IDeleteLabelValidator
     {
-        Task<bool> ValidateAsync(string userId, long groupId);
+        Task<bool> ValidateAsync(string userId, long labelId);
     }
 
     public class DeleteLabelValidator : IDeleteLabelValidator
     {
+        private readonly ILabelValidator _labelValidator;
         private readonly IGroupValidator _groupValidator;
 
-        public DeleteLabelValidator(IGroupValidator groupValidator)
+        public DeleteLabelValidator(
+            ILabelValidator labelValidator,
+            IGroupValidator groupValidator)
         {
+            _labelValidator = labelValidator;
             _groupValidator = groupValidator;
         }
 
-        public async Task<bool> ValidateAsync(string userId, long groupId)
+        public async Task<bool> ValidateAsync(string userId, long labelId)
         {
-            await _groupValidator.ValidateAsync(userId, groupId);
+            var label = await _labelValidator.ValidateAsync(labelId);
+            await _groupValidator.ValidateAsync(userId, label.GroupId);
 
             return true;
         }
