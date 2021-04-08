@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using budget4home.App.Groups.Requests;
 using budget4home.App.Groups.Responses;
-using budget4home.App.Groups.Validators;
 using budget4home.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -18,25 +17,13 @@ namespace budget4home.App.Groups
     public class GroupController : ControllerBase
     {
         private readonly IGroupService _groupService;
-        private readonly IAddGroupValidator _addValidator;
-        private readonly IGetByIdGroupValidator _getByIdValidator;
-        private readonly IUpdateGroupValidator _updateValidator;
-        private readonly IDeleteGroupValidator _deleteValidator;
         private readonly IMapper _mapper;
 
         public GroupController(
             IGroupService groupService,
-            IAddGroupValidator addValidator,
-            IGetByIdGroupValidator getByIdValidator,
-            IUpdateGroupValidator updateValidator,
-            IDeleteGroupValidator deleteValidator,
             IMapper mapper)
         {
             _groupService = groupService;
-            _addValidator = addValidator;
-            _getByIdValidator = getByIdValidator;
-            _updateValidator = updateValidator;
-            _deleteValidator = deleteValidator;
             _mapper = mapper;
         }
 
@@ -60,13 +47,10 @@ namespace budget4home.App.Groups
 
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(GetByIdGroupResponse), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetById(long id)
+        public async Task<IActionResult> GetById([GroupValidation] long id)
         {
-            var userId = UserHelper.GetUserId(HttpContext);
-
             try
             {
-                await _getByIdValidator.ValidateAsync(userId, id);
                 var obj = await _groupService.GetByIdAsync(id);
                 return Ok(_mapper.Map<GetByIdGroupResponse>(obj));
             }
@@ -92,7 +76,6 @@ namespace budget4home.App.Groups
 
             try
             {
-                await _addValidator.ValidateAsync(userId, request);
                 var model = _mapper.Map<GroupModel>(request);
                 var obj = await _groupService.AddAsync(userId, model);
                 return Ok(obj.Id);
@@ -119,7 +102,6 @@ namespace budget4home.App.Groups
 
             try
             {
-                await _updateValidator.ValidateAsync(userId, request);
                 var model = _mapper.Map<GroupModel>(request);
                 var obj = await _groupService.UpdateAsync(userId, model);
                 return Ok(obj.Id);
@@ -140,13 +122,12 @@ namespace budget4home.App.Groups
 
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(long), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Delete(long id)
+        public async Task<IActionResult> Delete([GroupValidation] long id)
         {
             var userId = UserHelper.GetUserId(HttpContext);
 
             try
             {
-                await _deleteValidator.ValidateAsync(userId, id);
                 await _groupService.DeleteAsync(userId, id);
                 return Ok(id);
             }

@@ -1,25 +1,9 @@
-using budget4home.App.Expenses;
-using budget4home.App.Expenses.Validators;
-using budget4home.App.Groups;
-using budget4home.App.Groups.Validators;
-using budget4home.App.Labels;
-using budget4home.App.Labels.Validators;
-using budget4home.App.Users;
-using budget4home.App.Users.Validators;
 using budget4home.Extensions;
-using budget4home.Helpers;
-using budget4home.Util;
-using FirebaseAdmin;
-using Google.Apis.Auth.OAuth2;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 
 namespace budget4home
 {
@@ -44,6 +28,7 @@ namespace budget4home
                 .SetupSwagger(Configuration)
                 .SetupDependecyInjection()
                 .SetupProfiles();
+            services.AddHttpContextAccessor();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
