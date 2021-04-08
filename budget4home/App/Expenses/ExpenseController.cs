@@ -29,7 +29,7 @@ namespace budget4home.App.Expenses
 
         [HttpGet]
         [ProducesResponseType(typeof(ICollection<GetExpenseResponse>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAll([FromQuery]GetExpensesRequest request)
+        public async Task<IActionResult> GetAll([FromQuery] GetExpensesRequest request)
         {
             var userId = UserHelper.GetUserId(HttpContext);
 
@@ -55,7 +55,7 @@ namespace budget4home.App.Expenses
 
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(GetExpenseResponse), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetById(long id)
+        public async Task<IActionResult> GetById([ExpenseValidation] long id)
         {
             try
             {
@@ -147,7 +147,7 @@ namespace budget4home.App.Expenses
 
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(long), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Delete(long id, [FromQuery]bool includeSchedule = false)
+        public async Task<IActionResult> Delete([ExpenseValidation] long id, [FromQuery] bool includeSchedule = false)
         {
             var userId = UserHelper.GetUserId(HttpContext);
 

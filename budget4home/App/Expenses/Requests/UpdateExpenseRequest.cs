@@ -6,6 +6,7 @@ namespace budget4home.App.Expenses.Requests
 {
     public class UpdateExpenseRequest
     {
+        [ExpenseValidation]
         public long Id { get; set; }
 
         [Required]

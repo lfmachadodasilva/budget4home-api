@@ -1,6 +1,5 @@
 ﻿using budget4home.Helpers;
 using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace budget4home.App.Groups
@@ -18,7 +17,7 @@ namespace budget4home.App.Groups
             var task = groupRepository.MatchAsync(userId, groupId);
             task.Wait();
 
-            if(!task.Result)
+            if (!task.Result)
             {
                 return new ValidationResult("INVALID_GROUP");
             }

@@ -15,7 +15,7 @@ namespace budget4home.App.Labels
             Task.WaitAll(getByIdTask);
 
             var label = getByIdTask.Result;
-            if(label == null)
+            if (label == null)
             {
                 // label does not exist
                 return new ValidationResult("INVALID_LABEL");
@@ -25,7 +25,7 @@ namespace budget4home.App.Labels
 
             var parent = validationContext.ObjectInstance;
             var groupIdProp = parent.GetType().GetProperty("GroupId");
-            if(groupIdProp != null)
+            if (groupIdProp != null)
             {
                 groupId = (long)groupIdProp.GetValue(parent, null);
                 if (!groupId.Equals(label.GroupId))
