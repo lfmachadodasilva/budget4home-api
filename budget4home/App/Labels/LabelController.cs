@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using budget4home.App.Labels.Requests;
 using budget4home.App.Labels.Responses;
-using budget4home.App.Labels.Validators;
 using budget4home.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -18,28 +17,11 @@ namespace budget4home.App.Labels
     public class LabelController : ControllerBase
     {
         private readonly ILabelService _labelService;
-        private readonly IGetFullLabelsValidator _getFullValidator;
-        private readonly IGetByIdLabelValidator _getByIdValidator;
-        private readonly IAddLabelValidator _addValidator;
-        private readonly IUpdateLabelValidator _updateValidator;
-        private readonly IDeleteLabelValidator _deleteValidator;
         private readonly IMapper _mapper;
 
-        public LabelController(
-            ILabelService labelService,
-            IGetFullLabelsValidator getFullValidator,
-            IGetByIdLabelValidator getByIdValidator,
-            IAddLabelValidator addValidator,
-            IUpdateLabelValidator updateValidator,
-            IDeleteLabelValidator deleteValidator,
-            IMapper mapper)
+        public LabelController(ILabelService labelService, IMapper mapper)
         {
             _labelService = labelService;
-            _getFullValidator = getFullValidator;
-            _getByIdValidator = getByIdValidator;
-            _addValidator = addValidator;
-            _updateValidator = updateValidator;
-            _deleteValidator = deleteValidator;
             _mapper = mapper;
         }
 
@@ -60,7 +42,6 @@ namespace budget4home.App.Labels
 
             try
             {
-                await _getFullValidator.ValidateAsync(userId, request);
                 var models = await _labelService.GetAllFullAsync(
                     userId,
                     request.Group,
@@ -81,13 +62,10 @@ namespace budget4home.App.Labels
 
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(GetLabelResponse), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetById(long id)
+        public async Task<IActionResult> GetById([LabelValidation] long id)
         {
-            var userId = UserHelper.GetUserId(HttpContext);
-
             try
             {
-                await _getByIdValidator.ValidateAsync(userId, id);
                 var obj = await _labelService.GetByIdAsync(id);
                 return Ok(_mapper.Map<GetLabelResponse>(obj));
             }
@@ -113,7 +91,6 @@ namespace budget4home.App.Labels
 
             try
             {
-                await _addValidator.ValidateAsync(userId, request);
                 var models = _mapper.Map<LabelModel>(request);
                 var obj = await _labelService.AddAsync(userId, models);
                 return Ok(obj.Id);
@@ -140,7 +117,6 @@ namespace budget4home.App.Labels
 
             try
             {
-                await _updateValidator.ValidateAsync(userId, request);
                 var models = _mapper.Map<LabelModel>(request);
                 var obj = await _labelService.UpdateAsync(userId, models);
                 return Ok(obj.Id);
@@ -161,13 +137,12 @@ namespace budget4home.App.Labels
 
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Delete(long id)
+        public async Task<IActionResult> Delete([LabelValidation] long id)
         {
             var userId = UserHelper.GetUserId(HttpContext);
 
             try
             {
-                await _deleteValidator.ValidateAsync(userId, id);
                 await _labelService.DeleteAsync(userId, id);
                 return Ok(id);
             }
