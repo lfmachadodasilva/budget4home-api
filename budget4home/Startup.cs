@@ -19,16 +19,16 @@ namespace budget4home
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
-            services.AddRouting(options => options.LowercaseUrls = true);
-
             services
                 .SetupContext(Configuration)
                 .SetupAuth(Configuration)
                 .SetupSwagger(Configuration)
+                .SetupCache(Configuration)
                 .SetupDependecyInjection()
-                .SetupProfiles();
-            services.AddHttpContextAccessor();
+                .SetupProfiles()
+                .AddHttpContextAccessor()
+                .AddRouting(options => options.LowercaseUrls = true)
+                .AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
