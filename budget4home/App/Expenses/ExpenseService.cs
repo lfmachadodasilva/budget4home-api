@@ -16,7 +16,7 @@ namespace budget4home.App.Expenses
         Task<List<KeyValuePair<long, decimal>>> GetValueByLabelAsync(long groupId, DateTime from, DateTime to, bool sum);
         Task<ExpenseModel> AddAsync(string userId, ExpenseModel model);
         Task<ExpenseModel> UpdateAsync(string userId, ExpenseModel model);
-        Task<bool> DeleteAsync(string userId, long id, bool includeSchedule);
+        Task<ExpenseModel> DeleteAsync(string userId, long id, bool includeSchedule);
         Task<bool> DeleteByLabelAsync(string userId, long labelId);
     }
 
@@ -112,7 +112,7 @@ namespace budget4home.App.Expenses
             return ret;
         }
 
-        public async Task<bool> DeleteAsync(string userId, long id, bool includeSchedule)
+        public async Task<ExpenseModel> DeleteAsync(string userId, long id, bool includeSchedule)
         {
             if (includeSchedule)
             {
@@ -128,14 +128,14 @@ namespace budget4home.App.Expenses
                 id = parentId;
             }
 
-            await _expenseRepository.DeleteAsync(id);
+            var result = await _expenseRepository.DeleteAsync(id);
             var commitedItems = await _unitOfWork.CommitAsync();
             if (commitedItems <= 0)
             {
                 throw new DbException("ERROR_EXPENSE_DELETE");
             }
 
-            return true;
+            return result;
         }
 
         public async Task<bool> DeleteByLabelAsync(string userId, long labelId)

@@ -1,10 +1,10 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using budget4home.App.Groups.Requests;
 using budget4home.App.Groups.Responses;
 using budget4home.Helpers;
+using budget4home.Util;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,13 +18,16 @@ namespace budget4home.App.Groups
     {
         private readonly IGroupService _groupService;
         private readonly IMapper _mapper;
+        private readonly ICache _cache;
 
         public GroupController(
             IGroupService groupService,
-            IMapper mapper)
+            IMapper mapper,
+            ICache cache)
         {
             _groupService = groupService;
             _mapper = mapper;
+            _cache = cache;
         }
 
         [HttpGet]
@@ -32,8 +35,15 @@ namespace budget4home.App.Groups
         public async Task<IActionResult> GetAll()
         {
             var userId = UserHelper.GetUserId(HttpContext);
-            var objs = await _groupService.GetAll(userId);
-            return Ok(_mapper.Map<ICollection<GetGroupResponse>>(objs));
+            var result = await _cache.GetOrCreateAsync(
+                new CacheKey(userId, "group"),
+                async () =>
+                {
+                    var objs = await _groupService.GetAll(userId);
+                    return _mapper.Map<ICollection<GetGroupResponse>>(objs);
+                }
+            );
+            return Ok(result);
         }
 
         [HttpGet("/api/full/[controller]")]
@@ -41,8 +51,15 @@ namespace budget4home.App.Groups
         public async Task<IActionResult> GetAllFull()
         {
             var userId = UserHelper.GetUserId(HttpContext);
-            var objs = await _groupService.GetAllFullAsync(userId);
-            return Ok(_mapper.Map<ICollection<GetFullGroupResponse>>(objs));
+            var result = await _cache.GetOrCreateAsync(
+                new CacheKey(userId, "group", "full"),
+                async () =>
+                {
+                    var objs = await _groupService.GetAllFullAsync(userId);
+                    return _mapper.Map<ICollection<GetFullGroupResponse>>(objs);
+                }
+            );
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
@@ -54,17 +71,9 @@ namespace budget4home.App.Groups
                 var obj = await _groupService.GetByIdAsync(id);
                 return Ok(_mapper.Map<GetByIdGroupResponse>(obj));
             }
-            catch (ArgumentException e)
-            {
-                return BadRequest(e.Message);
-            }
             catch (DbException e)
             {
                 return BadRequest(e.Message);
-            }
-            catch
-            {
-                return BadRequest();
             }
         }
 
@@ -73,24 +82,19 @@ namespace budget4home.App.Groups
         public async Task<IActionResult> Post([FromBody] AddGroupRequest request)
         {
             var userId = UserHelper.GetUserId(HttpContext);
-
             try
             {
                 var model = _mapper.Map<GroupModel>(request);
                 var obj = await _groupService.AddAsync(userId, model);
+
+                // clear user cache
+                _cache.Delete(userId);
+
                 return Ok(obj.Id);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(e.Message);
             }
             catch (DbException e)
             {
                 return BadRequest(e.Message);
-            }
-            catch
-            {
-                return BadRequest();
             }
         }
 
@@ -99,24 +103,19 @@ namespace budget4home.App.Groups
         public async Task<IActionResult> Put([FromBody] UpdateGroupRequest request)
         {
             var userId = UserHelper.GetUserId(HttpContext);
-
             try
             {
                 var model = _mapper.Map<GroupModel>(request);
                 var obj = await _groupService.UpdateAsync(userId, model);
+
+                // clear user cache
+                _cache.Delete(userId);
+
                 return Ok(obj.Id);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(e.Message);
             }
             catch (DbException e)
             {
                 return BadRequest(e.Message);
-            }
-            catch
-            {
-                return BadRequest();
             }
         }
 
@@ -125,23 +124,18 @@ namespace budget4home.App.Groups
         public async Task<IActionResult> Delete([GroupValidation] long id)
         {
             var userId = UserHelper.GetUserId(HttpContext);
-
             try
             {
                 await _groupService.DeleteAsync(userId, id);
+
+                // clear user cache
+                _cache.Delete(userId);
+
                 return Ok(id);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(e.Message);
             }
             catch (DbException e)
             {
                 return BadRequest(e.Message);
-            }
-            catch
-            {
-                return BadRequest();
             }
         }
     }

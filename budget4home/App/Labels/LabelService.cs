@@ -15,7 +15,7 @@ namespace budget4home.App.Labels
         Task<List<LabelFullModel>> GetAllFullAsync(string userId, long groupId, int year, int month);
         Task<LabelModel> AddAsync(string userId, LabelModel model);
         Task<LabelModel> UpdateAsync(string userId, LabelModel model);
-        Task<bool> DeleteAsync(string userId, long id);
+        Task<LabelModel> DeleteAsync(string userId, long id);
         Task<bool> DeleteByGroupAsync(string userId, long groupId);
     }
 
@@ -98,18 +98,18 @@ namespace budget4home.App.Labels
             return ret;
         }
 
-        public async Task<bool> DeleteAsync(string userId, long id)
+        public async Task<LabelModel> DeleteAsync(string userId, long id)
         {
             // delete all expenses
             await _expenseService.DeleteByLabelAsync(userId, id);
 
-            await _labelRepository.DeleteAsync(id);
+            var result = await _labelRepository.DeleteAsync(id);
             var commitedItems = await _unitOfWork.CommitAsync();
             if (commitedItems <= 0)
             {
                 throw new DbException("ERROR_EXPENSE_DELETE");
             }
-            return true;
+            return result;
         }
 
         public async Task<bool> DeleteByGroupAsync(string userId, long groupId)

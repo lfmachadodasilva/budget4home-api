@@ -67,8 +67,8 @@ namespace budget4home.App.Base
         /// Delete
         /// </summary>
         /// <param name="id">id</param>
-        /// <returns>True if was removed and false otherwise</returns>
-        Task<bool> DeleteAsync(TModelType id);
+        /// <returns>model deleted</returns>
+        Task<TModel> DeleteAsync(TModelType id);
     }
 
     /// <inheritdoc />
@@ -192,7 +192,7 @@ namespace budget4home.App.Base
         }
 
         /// <inheritdoc />
-        public virtual async Task<bool> DeleteAsync(TModelType id)
+        public virtual async Task<TModel> DeleteAsync(TModelType id)
         {
             TModel model = await GetByIdAsync(id);
             if (model == null)
@@ -201,10 +201,10 @@ namespace budget4home.App.Base
                 throw new KeyNotFoundException();
             }
 
-            var result = _context.Remove(model) != null;
+            var result = _context.Remove(model);
             //_logger.LogInformation($"removed: {id}");
 
-            return result;
+            return result.Entity;
         }
     }
 }

@@ -1,9 +1,7 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
+﻿using budget4home.Extensions;
+using Microsoft.Extensions.Caching.Distributed;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace budget4home.Util
@@ -74,70 +72,35 @@ namespace budget4home.Util
         }
     }
 
-    public static class Cache
+    public interface ICache
     {
-        private static readonly ConcurrentBag<string> _keys = new ConcurrentBag<string>();
+        Task<T> GetOrCreateAsync<T>(CacheKey key, Func<Task<T>> factory, uint expireInHours = 1);
+        void Delete(CacheKey key);
+        void Delete(string key);
+    }
 
-        public static async Task<T> GetOrCreateAsync<T>(
-            this IDistributedCache cache,
-            CacheKey key,
-            Func<Task<T>> factory,
-            uint expireInHours = 1)
+    public class Cache : ICache
+    {
+        private readonly IDistributedCache _cache;
+
+        public Cache(IDistributedCache cache)
         {
-            try
-            {
-                var itemSerialize = await cache.GetStringAsync(key);
-                if (!string.IsNullOrEmpty(itemSerialize))
-                {
-                    await cache.RefreshAsync(key);
-                    return JsonSerializer.Deserialize<T>(itemSerialize);
-                }
-            }
-            catch
-            {
-                // ignore missing/corrupt value
-            }
-
-            var item = await factory();
-
-            try
-            {
-                var itemSerialized = JsonSerializer.Serialize(item);
-                _keys.Add(key);
-                await cache.SetStringAsync(key, itemSerialized, new DistributedCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = new TimeSpan(0, (int)expireInHours, 0, 0)
-                });
-            }
-            catch
-            {
-                // ignore missing/corrupt value
-            }
-
-            return item;
+            _cache = cache;
         }
 
-        public static void Delete(this IDistributedCache cache, CacheKey key)
+        public Task<T> GetOrCreateAsync<T>(CacheKey key, Func<Task<T>> factory, uint expireInHours = 1)
         {
-            var keysToRemove = _keys.ToList();
-            for (var i = 0; i < keysToRemove.Count; i++)
-            {
-                var keyToRemove = keysToRemove[i];
+            return _cache.GetOrCreateAsync(key, factory, expireInHours);
+        }
 
-                //Console.WriteLine(keyToRemove);
-                if (!keyToRemove.Contains(key))
-                    return;
+        public void Delete(CacheKey key)
+        {
+            this.Delete(key.ToString());
+        }
 
-                try
-                {
-                    _keys.TryTake(out keyToRemove);
-                    cache.Remove(keyToRemove);
-                }
-                catch
-                {
-                    // just ignore
-                }
-            }
+        public void Delete(string key)
+        {
+            _cache.Delete(key);
         }
     }
 }

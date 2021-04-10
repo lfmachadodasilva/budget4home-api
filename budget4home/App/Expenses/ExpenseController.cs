@@ -5,6 +5,7 @@ using AutoMapper;
 using budget4home.App.Expenses.Requests;
 using budget4home.App.Expenses.Responses;
 using budget4home.Helpers;
+using budget4home.Util;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,13 +19,16 @@ namespace budget4home.App.Expenses
     {
         private readonly IExpenseService _expenseService;
         private readonly IMapper _mapper;
+        private readonly ICache _cache;
 
         public ExpenseController(
             IExpenseService expenseService,
-            IMapper mapper)
+            IMapper mapper,
+            ICache cache)
         {
             _expenseService = expenseService;
             _mapper = mapper;
+            _cache = cache;
         }
 
         [HttpGet]
@@ -33,24 +37,19 @@ namespace budget4home.App.Expenses
         {
             var userId = UserHelper.GetUserId(HttpContext);
 
-            try
-            {
-                var models = await _expenseService.GetAllAsync(
-                    userId,
-                    request.Group,
-                    request.Year,
-                    request.Month);
-                var dtos = _mapper.Map<ICollection<GetExpenseResponse>>(models);
-                return Ok(dtos);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch
-            {
-                return BadRequest();
-            }
+            var result = await _cache.GetOrCreateAsync(
+                new CacheKey(request.Group, "expense", request.Month, request.Year), 
+                async () =>
+                {
+                    var models = await _expenseService.GetAllAsync(
+                        userId,
+                        request.Group,
+                        request.Year,
+                        request.Month);
+                    var dtos = _mapper.Map<ICollection<GetExpenseResponse>>(models);
+                    return dtos;
+                });
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
@@ -62,17 +61,9 @@ namespace budget4home.App.Expenses
                 var obj = await _expenseService.GetByIdAsync(id);
                 return Ok(_mapper.Map<GetExpenseResponse>(obj));
             }
-            catch (ArgumentException e)
-            {
-                return BadRequest(e.Message);
-            }
             catch (DbException e)
             {
                 return BadRequest(e.Message);
-            }
-            catch
-            {
-                return BadRequest();
             }
         }
 
@@ -82,15 +73,8 @@ namespace budget4home.App.Expenses
         {
             var userId = UserHelper.GetUserId(HttpContext);
 
-            try
-            {
-                var result = await _expenseService.GetYearsAsync(userId);
-                return Ok(result);
-            }
-            catch
-            {
-                return BadRequest();
-            }
+            var result = await _expenseService.GetYearsAsync(userId);
+            return Ok(result);
         }
 
         [HttpPost]
@@ -103,19 +87,15 @@ namespace budget4home.App.Expenses
             {
                 var model = _mapper.Map<ExpenseModel>(request);
                 var obj = await _expenseService.AddAsync(userId, model);
+
+                // clear group cache
+                _cache.Delete(obj.GroupId.ToString());
+
                 return Ok(obj.Id);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(e.Message);
             }
             catch (DbException e)
             {
                 return BadRequest(e.Message);
-            }
-            catch
-            {
-                return BadRequest();
             }
         }
 
@@ -129,19 +109,15 @@ namespace budget4home.App.Expenses
             {
                 var model = _mapper.Map<ExpenseModel>(request);
                 var obj = await _expenseService.UpdateAsync(userId, model);
+
+                // clear group cache
+                _cache.Delete(obj.GroupId.ToString());
+
                 return Ok(obj.Id);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(e.Message);
             }
             catch (DbException e)
             {
                 return BadRequest(e.Message);
-            }
-            catch
-            {
-                return BadRequest();
             }
         }
 
@@ -153,20 +129,16 @@ namespace budget4home.App.Expenses
 
             try
             {
-                await _expenseService.DeleteAsync(userId, id, includeSchedule);
+                var obj = await _expenseService.DeleteAsync(userId, id, includeSchedule);
+
+                // TODO delete group cache
+                _cache.Delete(obj.GroupId.ToString());
+
                 return Ok(id);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(e.Message);
             }
             catch (DbException e)
             {
                 return BadRequest(e.Message);
-            }
-            catch
-            {
-                return BadRequest();
             }
         }
     }

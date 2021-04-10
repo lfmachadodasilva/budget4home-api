@@ -19,8 +19,7 @@ namespace budget4home.App.Users
 
         public async Task<IList<UserModel>> GetAllUsersAsync()
         {
-            var ret = new List<UserModel>();
-
+            var ret = new List<UserModel>(100);
             var enumerator = FirebaseAuth.DefaultInstance.ListUsersAsync(null).GetAsyncEnumerator();
             while (await enumerator.MoveNextAsync())
             {

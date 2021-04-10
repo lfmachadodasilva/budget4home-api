@@ -11,23 +11,25 @@ namespace budget4home.Extensions
     {
         public static IServiceCollection SetupDependecyInjection(this IServiceCollection services)
         {
-            services.AddTransient<IUnitOfWork, UnitOfWork>();
-            {
-                services.AddTransient<ILabelService, LabelService>();
-                services.AddTransient<ILabelRepository, LabelRepository>();
-            }
-            {
-                services.AddTransient<IExpenseService, ExpenseService>();
-                services.AddTransient<IExpenseRepository, ExpenseRepository>();
-            }
-            {
-                services.AddTransient<IGroupService, GroupService>();
-                services.AddTransient<IGroupRepository, GroupRepository>();
-            }
-            {
-                services.AddTransient<IUserService, UserService>();
-                services.AddTransient<IFirebaseRepository, FirebaseRepository>();
-            }
+            // general
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<ICache, Cache>();
+
+            // label
+            services.AddScoped<ILabelService, LabelService>();
+            services.AddScoped<ILabelRepository, LabelRepository>();
+
+            // expense
+            services.AddScoped<IExpenseService, ExpenseService>();
+            services.AddScoped<IExpenseRepository, ExpenseRepository>();
+
+            // group
+            services.AddScoped<IGroupService, GroupService>();
+            services.AddScoped<IGroupRepository, GroupRepository>();
+
+            // user
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IFirebaseRepository, FirebaseRepository>();
 
             return services;
         }

@@ -1,6 +1,5 @@
 using budget4home.Util;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -10,9 +9,9 @@ namespace budget4home.App
     [Route("api/[controller]")]
     public class ReadyController : Controller
     {
-        private readonly IDistributedCache _cache;
+        private readonly ICache _cache;
 
-        public ReadyController(IDistributedCache cache)
+        public ReadyController(ICache cache)
         {
             _cache = cache;
         }
@@ -29,9 +28,18 @@ namespace budget4home.App
         [ProducesResponseType((int)HttpStatusCode.OK)]
         public async Task<IActionResult> AddCache(string key, string value)
         {
-            return Ok(await _cache.GetOrCreateAsync(new CacheKey(key), () => {
+            return Ok(await _cache.GetOrCreateAsync(new CacheKey(key), () =>
+            {
                 return Task.FromResult(value);
             }));
+        }
+
+        [HttpDelete("cache")]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        public IActionResult AddCache(string key)
+        {
+            _cache.Delete(key);
+            return Ok();
         }
     }
 }
