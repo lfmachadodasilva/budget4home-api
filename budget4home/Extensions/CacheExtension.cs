@@ -24,14 +24,13 @@ namespace budget4home.Extensions
             return services;
         }    
 
-        private static readonly ConcurrentBag<string> _keys = new();
-        private static readonly ConcurrentDictionary<string, Timer> _keys2 = new();
+        private static readonly ConcurrentDictionary<string, Timer> _keys = new();
 
         private static void TimerCallback(Object o)
         {
             string toRemove = (string)o;
 
-            _keys2.TryRemove(toRemove, out var timer);
+            _keys.TryRemove(toRemove, out var timer);
 
             Console.WriteLine("Remove: " + toRemove + (timer != null).ToString());
             if (timer != null)
@@ -65,7 +64,7 @@ namespace budget4home.Extensions
             try
             {
                 var itemSerialized = JsonSerializer.Serialize(item);
-                _keys2.TryAdd(key, new Timer(TimerCallback, key.ToString(), expireInHours * 3600000, Timeout.Infinite));
+                _keys.TryAdd(key, new Timer(TimerCallback, key.ToString(), expireInHours * 3600000, Timeout.Infinite));
                 Console.WriteLine("Add: " + key.ToString());
                 await cache.SetStringAsync(key, itemSerialized, new DistributedCacheEntryOptions
                 {
@@ -90,7 +89,7 @@ namespace budget4home.Extensions
             var keysToRemove = _keys.ToList();
             for (var i = 0; i < keysToRemove.Count; i++)
             {
-                var keyToRemove = keysToRemove[i];
+                var keyToRemove = keysToRemove[i].Key;
 
                 //Console.WriteLine(keyToRemove);
                 if (!keyToRemove.Contains(key))
@@ -98,7 +97,7 @@ namespace budget4home.Extensions
 
                 try
                 {
-                    _keys.TryTake(out keyToRemove);
+                    TimerCallback(keyToRemove);
                     cache.Remove(keyToRemove);
                 }
                 catch
